@@ -19,7 +19,16 @@ import HelloWorld from './components/HelloWorld.vue'
         <RouterLink to="/Event">Event</RouterLink>
         <RouterLink to="/Binding">Binding</RouterLink>
         <RouterLink to="/Style">Style</RouterLink>
-        <RouterLink to="/Mockup">Mockup</RouterLink>
+        <RouterLink to="/WeatherMockup">WeatherMockup</RouterLink>
+        <RouterLink to="/Composition">Composition</RouterLink>
+        <RouterLink to="/Computed">Computed</RouterLink>
+        <RouterLink to="/WeatherComposition">WeatherComposition</RouterLink>
+        <RouterLink to="/ComponentParents">ComponentParents</RouterLink>
+        <RouterLink to="/PropsEmitsParent">PropsEmitsParent</RouterLink>
+        <RouterLink to="/SlotDefaultParent">SlotDefaultParent</RouterLink>
+        <RouterLink to="/SlotNamedParent">SlotNamedParent</RouterLink>
+        <RouterLink to="/SlotScopedParent">SlotScopedParent</RouterLink>
+        <RouterLink to="/WeatherParent">WeatherParent</RouterLink>
       </nav>
     </div>
   </header>
