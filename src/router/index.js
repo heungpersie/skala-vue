@@ -166,12 +166,6 @@ const router = createRouter({
       component: () => import('../views/work/MagpieHeungView.vue'),
     },
 
-    // TEMP: members/jaeheung1 폴더 미리보기 검증용 (검증 끝나면 제거)
-    {
-      path: '/preview-jaeheung1',
-      name: 'PreviewJaeheung1',
-      component: () => import('../members/jaeheung1/index.vue'),
-    },
     // Catch-all Route: 위 규칙에 매칭되지 않는 모든 경로 (반드시 배열의 마지막에 위치)
     {
       path: '/:pathMatch(.*)*',
