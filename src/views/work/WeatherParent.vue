@@ -6,16 +6,13 @@ import { ref, computed, watch, watchEffect, onMounted } from 'vue'
 import BaseDashboardCard from './BaseDashboardCard.vue'
 import SearchBar from './SearchBar.vue'
 import WeatherCard from './WeatherCard.vue'
+import WeatherMap from './WeatherMap.vue'
+import { WEATHER_CITIES } from '@/data/weatherCities'
+import { fetchWeatherForCities } from '@/composables/useWeatherApi'
 
-/* ── [과제1-1 / 과제2-1] 반응형 상태 + 날씨 데이터 배열 ── */
-const weatherList = ref([
-  { id: 'city_01', name: '서울', temp: 15, status: '천둥번개' },
-  { id: 'city_02', name: '수원', temp: 5, status: '비' },
-  { id: 'city_03', name: '부산', temp: 20, status: '구름' },
-  { id: 'city_04', name: '탄천', temp: 30, status: '아주 맑음' },
-  { id: 'city_05', name: '평택', temp: 25, status: '맑음' },
-  { id: 'city_06', name: '건양', temp: -4, status: '눈' },
-])
+/* ── [과제1-1 / 과제2-1] 반응형 상태 + 날씨 데이터 배열 (Open-Meteo 실시간 API) ── */
+const weatherList = ref([])
+const apiError = ref(false)
 
 const searchQuery = ref('') // 검색어
 const selectedCityInfo = ref(null) // 선택된 도시
@@ -27,7 +24,16 @@ const statusOptions = computed(() => ['전체', ...new Set(weatherList.value.map
 const sortOrder = ref('default')
 
 const loading = ref(true)
-onMounted(() => setTimeout(() => (loading.value = false), 800))
+onMounted(async () => {
+  try {
+    weatherList.value = await fetchWeatherForCities(WEATHER_CITIES)
+    apiError.value = weatherList.value.every((c) => c.error)
+  } catch {
+    apiError.value = true
+  } finally {
+    loading.value = false
+  }
+})
 
 /* ── [과제2-2] 검색 도시 (computed 활용) ── */
 const filteredWeatherList = computed(() => {
@@ -58,9 +64,10 @@ const sortedList = computed(() => {
 })
 
 const averageTemp = computed(() => {
-  if (filteredWeatherList.value.length === 0) return null
-  const sum = filteredWeatherList.value.reduce((acc, c) => acc + c.temp, 0)
-  return (sum / filteredWeatherList.value.length).toFixed(1)
+  const known = filteredWeatherList.value.filter((c) => c.temp !== null)
+  if (known.length === 0) return null
+  const sum = known.reduce((acc, c) => acc + c.temp, 0)
+  return (sum / known.length).toFixed(1)
 })
 
 /* ── [과제1-4] 상태 바 문구 ── */
@@ -93,6 +100,13 @@ const selectCity = (city) => {
   selectedCityInfo.value = city
 }
 
+// WeatherMap → select-city (id 기반) -> 동일한 선택 로직 재사용
+const selectedCityId = computed(() => selectedCityInfo.value?.id ?? null)
+const selectCityById = (id) => {
+  const city = weatherList.value.find((c) => c.id === id)
+  if (city) selectCity(city)
+}
+
 // WeatherCard → click-detail
 const showDetail = (city) => {
   window.alert(`${city.name}의 현재 날씨는 [${city.status}] 상태입니다.`)
@@ -101,7 +115,8 @@ const showDetail = (city) => {
 
 <template>
   <div class="card-panel">
-    <p class="panel-title">🌤️ 과제 3: 날씨 (컴포넌트)</p>
+    <p class="panel-title">🌤️ 과제 3: 날씨 (컴포넌트) <span class="live-dot" title="Open-Meteo 실시간 연동"></span></p>
+    <p v-if="apiError" class="api-error">⚠️ 날씨 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
 
     <!-- [과제3-2] 공통 카드에 SearchBar를 slot으로 주입 -->
     <BaseDashboardCard title="🔍 도시 검색 (한글 즉시 동기화)">
@@ -164,6 +179,11 @@ const showDetail = (city) => {
       </p>
     </BaseDashboardCard>
 
+    <!-- 지도 -->
+    <BaseDashboardCard title="🗺️ 지도로 보기" v-if="!loading">
+      <WeatherMap :cities="sortedList" :selected-id="selectedCityId" @select-city="selectCityById" />
+    </BaseDashboardCard>
+
     <!-- 상태바 -->
     <div class="status-bar">{{ statusMessage }}</div>
   </div>
@@ -171,20 +191,55 @@ const showDetail = (city) => {
 
 <style scoped>
 .card-panel {
-  background: #fff;
+  position: relative;
+  overflow: hidden;
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
   width: 100%;
   max-width: 640px;
   border-radius: 18px;
-  box-shadow: 0 8px 24px rgba(30, 60, 100, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   padding: 28px;
   font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
   box-sizing: border-box;
 }
+.card-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--magpie-gradient);
+}
 .panel-title {
   font-size: 22px;
   font-weight: 700;
-  color: #1c2b3a;
+  color: var(--color-heading);
   margin: 0 0 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2ecc71;
+  animation: live-pulse 1.8s infinite;
+}
+@keyframes live-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.5); }
+  70% { box-shadow: 0 0 0 7px rgba(46, 204, 113, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+}
+.api-error {
+  background: #fdecea;
+  color: #c0392b;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin: 0 0 16px 0;
 }
 
 /* 부가 컨트롤 (slot으로 넘기는 내용이므로 부모 스코프에 둔다) */
@@ -202,7 +257,7 @@ const showDetail = (city) => {
 .control-label {
   font-size: 13px;
   font-weight: 700;
-  color: #45566a;
+  color: var(--color-text);
   min-width: 60px;
 }
 .chip-group {
@@ -211,37 +266,38 @@ const showDetail = (city) => {
   gap: 6px;
 }
 .chip {
-  border: 1px solid #cdd9e5;
-  background: #fff;
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
   border-radius: 20px;
   padding: 5px 12px;
   font-size: 12px;
-  color: #45566a;
+  color: var(--color-text);
   cursor: pointer;
 }
 .chip.active {
-  background: #5b8def;
-  border-color: #5b8def;
+  background: var(--magpie-gradient);
+  border-color: transparent;
   color: #fff;
 }
 .sort-select {
-  border: 1px solid #cdd9e5;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 6px 10px;
   font-size: 13px;
-  background: #fff;
-  color: #34495e;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 .avg-temp {
   font-size: 14px;
   font-weight: 700;
-  color: #2f6fef;
+  color: var(--magpie-accent);
 }
 
 .loading {
   text-align: center;
   padding: 24px 0;
-  color: #8a97a5;
+  color: var(--color-text);
+  opacity: 0.7;
   font-size: 14px;
 }
 
@@ -268,8 +324,8 @@ const showDetail = (city) => {
 
 .status-bar {
   text-align: center;
-  background: #e5f6ec;
-  color: #2f8f52;
+  background: var(--magpie-accent-soft);
+  color: var(--magpie-accent);
   font-size: 14px;
   font-weight: 600;
   padding: 12px;
@@ -277,7 +333,8 @@ const showDetail = (city) => {
 }
 .empty {
   text-align: center;
-  color: #8a97a5;
+  color: var(--color-text);
+  opacity: 0.7;
   font-size: 13px;
   padding: 10px 0;
   margin: 0;

@@ -1,5 +1,5 @@
 <script setup>
-/* ── [과제3-3] SearchBar.vue ──
+/* ── [Router 실습] SearchBar.vue ──
    - 부모로부터 검색어(query)를 props로 전달받아 표시
    - 입력이 발생하면 update-query 이벤트로 검색어를 부모에게 전달 (emits)
    - 자식은 props를 직접 수정하지 않는다(단방향 데이터 흐름 유지) */
@@ -9,7 +9,7 @@ defineProps({
 
 const emit = defineEmits(['update-query'])
 
-/* [과제1-3] 한글 즉시 동기화: v-model 대신 :value + @input 조합
+/* 한글 즉시 동기화: v-model 대신 :value + @input 조합
    (v-model은 한글 조합 중(IME) 값이 늦게 반영되기 때문) */
 const onInput = (event) => {
   emit('update-query', event.target.value)

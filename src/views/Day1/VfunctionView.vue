@@ -140,24 +140,31 @@ const memoKey = ref(0)
 
 <style scoped>
 .wrap {
-  font-family: sans-serif;
-  max-width: 480px;
+  max-width: 520px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 1.75rem 2rem;
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
 }
 section {
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--color-border);
   padding: 16px 0;
+}
+section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 h3 {
   margin-bottom: 8px;
+  color: var(--color-heading);
 }
 .active {
   font-weight: bold;
-  color: green;
+  color: var(--magpie-teal);
 }
 .error {
-  color: red;
+  color: #e85d5d;
 }
 [v-cloak] {
   display: none;

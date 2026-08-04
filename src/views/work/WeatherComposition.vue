@@ -1,15 +1,12 @@
 <script setup>
 import { ref, computed, watch, watchEffect, onMounted } from 'vue'
+import { WEATHER_CITIES } from '@/data/weatherCities'
+import { fetchWeatherForCities } from '@/composables/useWeatherApi'
+import WeatherMap from './WeatherMap.vue'
 
-/* ── [과제1-1 / 과제2-1] 반응형 상태 + 날씨 데이터 배열 ── */
-const weatherList = ref([
-  { id: 'city_01', name: '서울', temp: 15, status: '천둥번개' },
-  { id: 'city_02', name: '수원', temp: 5, status: '비' },
-  { id: 'city_03', name: '부산', temp: 20, status: '구름' },
-  { id: 'city_04', name: '탄천', temp: 30, status: '아주 맑음' },
-  { id: 'city_05', name: '평택', temp: 25, status: '맑음' },
-  { id: 'city_06', name: '건양', temp: -4, status: '눈' },
-])
+/* ── [과제1-1 / 과제2-1] 반응형 상태 + 날씨 데이터 배열 (Open-Meteo 실시간 API) ── */
+const weatherList = ref([])
+const apiError = ref(false)
 
 const searchQuery = ref('') // 검색어
 const selectedCityInfo = ref(null) // 선택된 도시
@@ -21,7 +18,16 @@ const statusOptions = computed(() => ['전체', ...new Set(weatherList.value.map
 const sortOrder = ref('default')
 
 const loading = ref(true)
-onMounted(() => setTimeout(() => (loading.value = false), 800))
+onMounted(async () => {
+  try {
+    weatherList.value = await fetchWeatherForCities(WEATHER_CITIES)
+    apiError.value = weatherList.value.every((c) => c.error)
+  } catch {
+    apiError.value = true
+  } finally {
+    loading.value = false
+  }
+})
 
 /* ── [과제2-2] 검색 도시 (computed 활용) ── */
 const filteredWeatherList = computed(() => {
@@ -52,9 +58,10 @@ const sortedList = computed(() => {
 })
 
 const averageTemp = computed(() => {
-  if (filteredWeatherList.value.length === 0) return null
-  const sum = filteredWeatherList.value.reduce((acc, c) => acc + c.temp, 0)
-  return (sum / filteredWeatherList.value.length).toFixed(1)
+  const known = filteredWeatherList.value.filter((c) => c.temp !== null)
+  if (known.length === 0) return null
+  const sum = known.reduce((acc, c) => acc + c.temp, 0)
+  return (sum / known.length).toFixed(1)
 })
 
 /* ── [과제1-4] 상태 바 문구 ── */
@@ -84,6 +91,13 @@ const selectCity = (city) => {
   selectedCityInfo.value = city
 }
 
+// 지도 마커 클릭 -> id로 도시를 찾아 동일한 선택 로직 재사용
+const selectedCityId = computed(() => selectedCityInfo.value?.id ?? null)
+const selectCityById = (id) => {
+  const city = weatherList.value.find((c) => c.id === id)
+  if (city) selectCity(city)
+}
+
 // 상세보기 -> 버블링 없이(@click.stop) alert
 const showDetail = (cityName, status) => {
   window.alert(`${cityName}의 현재 날씨는 [${status}] 상태입니다.`)
@@ -92,7 +106,12 @@ const showDetail = (cityName, status) => {
 
 <template>
   <div class="card-panel">
-    <p class="panel-title">🌤️ 날씨 대시보드 (과제 1 + 2)</p>
+    <p class="panel-title">
+      🌤️ 과제 2: 날씨 대시보드 <span class="live-dot" title="Open-Meteo 실시간 연동"></span>
+    </p>
+    <p v-if="apiError" class="api-error">
+      ⚠️ 날씨 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+    </p>
 
     <!-- [과제1-3] 한글 검색: :value + @input -->
     <div class="section">
@@ -157,10 +176,13 @@ const showDetail = (cityName, status) => {
         >
           <div class="weather-info">
             <div class="city-line">{{ city.name }} ({{ city.status }})</div>
-            <div class="temp-line">현재 기온: {{ city.temp }}°C</div>
+            <div class="temp-line">
+              현재 기온: {{ city.temp === null ? '조회 실패' : `${city.temp}°C` }}
+            </div>
 
             <!-- [과제1-2] 조건부 렌더링 -->
-            <span v-if="city.temp >= 25" class="badge hot">🔥 더움 (25도 이상)</span>
+            <span v-if="city.temp === null" class="badge unknown">❓ 정보 없음</span>
+            <span v-else-if="city.temp >= 25" class="badge hot">🔥 더움 (25도 이상)</span>
             <span v-else-if="city.temp >= 10" class="badge cool">☁️ 선선함 (10~24도)</span>
             <span v-else class="badge cold">🧊 추움 (10도 미만)</span>
           </div>
@@ -177,6 +199,16 @@ const showDetail = (cityName, status) => {
       </p>
     </div>
 
+    <!-- 지도 -->
+    <div class="section" v-if="!loading">
+      <p class="section-title">🗺️ 지도로 보기</p>
+      <WeatherMap
+        :cities="sortedList"
+        :selected-id="selectedCityId"
+        @select-city="selectCityById"
+      />
+    </div>
+
     <!-- 상태바 -->
     <div class="status-bar">{{ statusMessage }}</div>
   </div>
@@ -188,22 +220,67 @@ const showDetail = (cityName, status) => {
 }
 
 .card-panel {
-  background: #fff;
+  position: relative;
+  overflow: hidden;
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
   width: 100%;
   max-width: 640px;
   border-radius: 18px;
-  box-shadow: 0 8px 24px rgba(30, 60, 100, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   padding: 28px;
   font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+}
+.card-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--magpie-gradient);
 }
 .panel-title {
   font-size: 22px;
   font-weight: 700;
-  color: #1c2b3a;
+  color: var(--color-heading);
   margin: 0 0 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2ecc71;
+  animation: live-pulse 1.8s infinite;
+}
+@keyframes live-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(46, 204, 113, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+  }
+}
+.api-error {
+  background: #fdecea;
+  color: #c0392b;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin: 0 0 16px 0;
+}
+.badge.unknown {
+  background: #9aa5b1;
 }
 .section {
-  background: #f4f7fb;
+  background: var(--color-background-mute);
+  border: 1px solid var(--color-border);
   border-radius: 14px;
   padding: 18px 20px;
   margin-bottom: 16px;
@@ -211,28 +288,31 @@ const showDetail = (cityName, status) => {
 .section-title {
   font-weight: 700;
   font-size: 15px;
-  color: #2a3b4d;
+  color: var(--color-heading);
   margin: 0 0 10px 0;
 }
 input[type='text'] {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #cdd9e5;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 14px;
   outline: none;
-  background: #fff;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 input[type='text']:focus {
-  border-color: #5b8def;
+  border-color: var(--magpie-accent);
 }
 .search-status {
   margin-top: 8px;
   font-size: 13px;
-  color: #6b7a89;
+  color: var(--color-text);
+  opacity: 0.75;
 }
 .search-status b {
-  color: #24405c;
+  color: var(--color-heading);
+  opacity: 1;
 }
 
 .controls {
@@ -249,7 +329,7 @@ input[type='text']:focus {
 .control-label {
   font-size: 13px;
   font-weight: 700;
-  color: #45566a;
+  color: var(--color-text);
   min-width: 60px;
 }
 .chip-group {
@@ -258,71 +338,72 @@ input[type='text']:focus {
   gap: 6px;
 }
 .chip {
-  border: 1px solid #cdd9e5;
-  background: #fff;
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
   border-radius: 20px;
   padding: 5px 12px;
   font-size: 12px;
-  color: #45566a;
+  color: var(--color-text);
   cursor: pointer;
 }
 .chip.active {
-  background: #5b8def;
-  border-color: #5b8def;
+  background: var(--magpie-gradient);
+  border-color: transparent;
   color: #fff;
 }
 .sort-select {
-  border: 1px solid #cdd9e5;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 6px 10px;
   font-size: 13px;
-  background: #fff;
-  color: #34495e;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 .avg-temp {
   font-size: 14px;
   font-weight: 700;
-  color: #2f6fef;
+  color: var(--magpie-accent);
 }
 
 .loading {
   text-align: center;
   padding: 24px 0;
-  color: #8a97a5;
+  color: var(--color-text);
+  opacity: 0.7;
   font-size: 14px;
 }
 
 .weather-card {
-  background: #fff;
+  background: var(--color-background);
   border-radius: 12px;
   padding: 14px 16px;
   margin-bottom: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition:
     box-shadow 0.15s ease,
     transform 0.15s ease;
-  border: 1px solid transparent;
+  border: 1px solid var(--color-border);
 }
 .weather-card:hover {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
 }
 .weather-card.selected {
-  border-color: #5b8def;
+  border-color: var(--magpie-accent);
 }
 .weather-info .city-line {
   font-weight: 700;
   font-size: 15px;
-  color: #1c2b3a;
+  color: var(--color-heading);
   margin-bottom: 4px;
 }
 .weather-info .temp-line {
   font-size: 13px;
-  color: #5b6b7a;
+  color: var(--color-text);
   margin-bottom: 8px;
 }
 .badge {
@@ -339,23 +420,24 @@ input[type='text']:focus {
   background: #ef5b5b;
 }
 .badge.cool {
-  background: #5b9bef;
+  background: var(--magpie-blue);
 }
 .badge.cold {
-  background: #6b7cff;
+  background: var(--magpie-violet);
 }
 .detail-btn {
-  background: #fff;
-  border: 1px solid #cdd9e5;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 8px 14px;
   font-size: 13px;
-  color: #34495e;
+  color: var(--color-text);
   cursor: pointer;
   white-space: nowrap;
 }
 .detail-btn:hover {
-  background: #eef3f9;
+  background: var(--magpie-accent-soft);
+  border-color: var(--magpie-accent);
 }
 
 .card-list-enter-active,
@@ -375,8 +457,8 @@ input[type='text']:focus {
 
 .status-bar {
   text-align: center;
-  background: #e5f6ec;
-  color: #2f8f52;
+  background: var(--magpie-accent-soft);
+  color: var(--magpie-accent);
   font-size: 14px;
   font-weight: 600;
   padding: 12px;
@@ -384,7 +466,8 @@ input[type='text']:focus {
 }
 .empty {
   text-align: center;
-  color: #8a97a5;
+  color: var(--color-text);
+  opacity: 0.7;
   font-size: 13px;
   padding: 10px 0;
 }

@@ -36,6 +36,21 @@
   --section-gap: 160px;
 }
 
+/* magpie (까치) theme — glossy black & white plumage with an iridescent
+   blue-teal-violet sheen on the tail feathers */
+:root {
+  --magpie-black: #14161a;
+  --magpie-white: #fafafa;
+  --magpie-blue: #2e86de;
+  --magpie-teal: #17a589;
+  --magpie-violet: #7c5cff;
+
+  --magpie-gradient: linear-gradient(135deg, var(--magpie-teal), var(--magpie-blue) 55%, var(--magpie-violet));
+  --magpie-accent: var(--magpie-blue);
+  --magpie-accent-soft: rgba(46, 134, 222, 0.14);
+  --magpie-accent-strong: rgba(46, 134, 222, 0.3);
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --color-background: var(--vt-c-black);
@@ -47,6 +62,10 @@
 
     --color-heading: var(--vt-c-text-dark-1);
     --color-text: var(--vt-c-text-dark-2);
+
+    --magpie-accent: var(--magpie-teal);
+    --magpie-accent-soft: rgba(23, 165, 137, 0.18);
+    --magpie-accent-strong: rgba(23, 165, 137, 0.35);
   }
 }
 

@@ -19,6 +19,7 @@ const nav = [
           { to: '/WeatherMockup', label: 'WeatherMockup' },
           { to: '/WeatherComposition', label: 'WeatherComposition' },
           { to: '/WeatherParent', label: 'WeatherParent' },
+          { to: '/weather-router', label: 'WeatherRouter' },
         ],
       },
     ],
@@ -51,6 +52,15 @@ const nav = [
           { to: '/SlotScopedParent', label: 'SlotScopedParent' },
         ],
       },
+      {
+        label: 'Day 3',
+        links: [
+          { to: '/UseRouter', label: 'UseRouter' },
+          { to: '/DynamicComponentParent', label: 'DynamicComponentParent' },
+          { to: '/TeleportParent', label: 'TeleportParent' },
+          { to: '/TransitionParent', label: 'TransitionParent' },
+        ],
+      },
     ],
   },
 ]
@@ -60,7 +70,60 @@ const nav = [
   <div class="layout">
     <aside class="sidebar">
       <RouterLink to="/" class="brand">
-        <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="36" height="36" />
+        <svg class="logo" viewBox="0 0 64 64" width="36" height="36" aria-hidden="true">
+          <defs>
+            <linearGradient id="magpieTail" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="var(--magpie-teal)" />
+              <stop offset="55%" stop-color="var(--magpie-blue)" />
+              <stop offset="100%" stop-color="var(--magpie-violet)" />
+            </linearGradient>
+          </defs>
+          <path d="M40 32 L61 47 L52 50 L58 58 L47 54 L44 44 Z" fill="url(#magpieTail)" />
+          <ellipse
+            cx="32"
+            cy="35"
+            rx="16"
+            ry="13"
+            fill="#2c313a"
+            stroke="rgba(255,255,255,0.5)"
+            stroke-width="1"
+          />
+          <ellipse cx="28" cy="40" rx="8" ry="6.5" fill="var(--magpie-white)" />
+          <circle
+            cx="17"
+            cy="24"
+            r="9"
+            fill="#2c313a"
+            stroke="rgba(255,255,255,0.5)"
+            stroke-width="1"
+          />
+          <polygon
+            points="8,24 2,22 8,20"
+            fill="#2c313a"
+            stroke="rgba(255,255,255,0.5)"
+            stroke-width="1"
+            stroke-linejoin="round"
+          />
+          <circle cx="15" cy="22" r="1.6" fill="var(--magpie-white)" />
+          <line
+            x1="24"
+            y1="46"
+            x2="22"
+            y2="54"
+            stroke="#2c313a"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <line
+            x1="32"
+            y1="47"
+            x2="31"
+            y2="55"
+            stroke="#2c313a"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
         <span>Skala Vue</span>
       </RouterLink>
 
@@ -103,12 +166,26 @@ const nav = [
 }
 
 .sidebar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  height: 100vh;
   width: 200px;
   flex-shrink: 0;
   padding: 1.5rem 1.25rem;
-  border-right: 1px solid var(--color-border);
-  background: var(--color-background-soft);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--magpie-black);
   overflow: visible;
+}
+
+.sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--magpie-gradient);
 }
 
 .brand {
@@ -116,7 +193,7 @@ const nav = [
   align-items: center;
   gap: 0.6rem;
   text-decoration: none;
-  color: var(--color-heading);
+  color: var(--magpie-white);
   font-weight: 700;
   font-size: 1.15rem;
   margin-bottom: 1.75rem;
@@ -135,7 +212,10 @@ const nav = [
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: hsla(160, 100%, 37%, 1);
+  background: var(--magpie-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   margin-bottom: 0.75rem;
 }
 
@@ -160,10 +240,12 @@ const nav = [
   border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--color-text);
+  color: rgba(250, 250, 250, 0.75);
   opacity: 0.75;
   cursor: default;
-  transition: background-color 0.2s, opacity 0.2s;
+  transition:
+    background-color 0.2s,
+    opacity 0.2s;
 }
 
 .caret {
@@ -175,11 +257,11 @@ const nav = [
 .group:focus-within .group-title,
 .group-active .group-title {
   opacity: 1;
-  background-color: hsla(160, 100%, 37%, 0.12);
+  background-color: var(--magpie-accent-soft);
 }
 
 .group-active .group-title {
-  color: hsla(160, 100%, 37%, 1);
+  color: var(--magpie-accent);
 }
 
 .group:hover .caret,
@@ -201,14 +283,17 @@ const nav = [
   z-index: 20;
   min-width: 200px;
   padding: 0.5rem;
-  background: var(--color-background);
-  border: 1px solid var(--color-border);
+  background: var(--magpie-black);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
   visibility: hidden;
   opacity: 0;
   transform: translateX(-4px);
-  transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+  transition:
+    opacity 0.15s,
+    transform 0.15s,
+    visibility 0.15s;
 }
 
 .group:hover .flyout,
@@ -223,18 +308,20 @@ const nav = [
   padding: 0.35rem 0.6rem;
   border-radius: 6px;
   font-size: 0.9rem;
-  color: var(--color-text);
+  color: rgba(250, 250, 250, 0.85);
   text-decoration: none;
   white-space: nowrap;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .link:hover {
-  background-color: hsla(160, 100%, 37%, 0.12);
+  background-color: var(--magpie-accent-soft);
 }
 
 .link.router-link-exact-active {
-  background-color: hsla(160, 100%, 37%, 1);
+  background: var(--magpie-gradient);
   color: #fff;
   font-weight: 600;
 }
@@ -251,9 +338,11 @@ const nav = [
   }
 
   .sidebar {
+    position: static;
+    height: auto;
     width: 100%;
     border-right: none;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   .content {

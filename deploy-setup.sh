@@ -1,6 +1,5 @@
 # cd로 skala-vue 프로젝트 루트로 이동한 뒤 아래 명령을 실행하세요.
-# chmod +x vue-vite-github-pages-deploy.sh
-# ./deploy-setup.sh heungpersie skala-vue ~/projects/skala-vue
+# chmod +x vue-vite-github-pages-deploy.sh ./deploy-setup.sh heungpersie skala-vue ~/projects/skala-vue
 
 
 

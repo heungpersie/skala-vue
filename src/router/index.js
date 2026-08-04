@@ -97,6 +97,33 @@ const router = createRouter({
       name: 'WeatherParent',
       component: () => import('../views/work/WeatherParent.vue'),
     },
+    {
+      path: '/UseRouter',
+      name: 'UseRouter',
+      component: () => import('../views/Day3/UseRouter.vue'),
+    },
+    // ── [Router 실습] 지연 로딩 + 동적 경로 매칭 + Catch-all Route ──
+    {
+      path: '/weather-router',
+      name: 'WeatherHome',
+      component: () => import('../views/WeatherHomeView.vue'),
+    },
+    {
+      path: '/weather-router/about',
+      name: 'WeatherAbout',
+      component: () => import('../views/WeatherAboutView.vue'),
+    },
+    {
+      path: '/weather/:cityId',
+      name: 'WeatherDetail',
+      component: () => import('../views/WeatherDetailView.vue'),
+    },
+    // Catch-all Route: 위 규칙에 매칭되지 않는 모든 경로 (반드시 배열의 마지막에 위치)
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'NotFound',
+      component: () => import('../views/NotFoundView.vue'),
+    },
   ],
 })
 

@@ -1,15 +1,12 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { WEATHER_CITIES } from '@/data/weatherCities'
+import { fetchWeatherForCities } from '@/composables/useWeatherApi'
+import WeatherMap from './WeatherMap.vue'
 
-// 1. 배열 렌더링용 날씨 데이터
-const weatherList = ref([
-  { id: 'city_01', name: '서울', temp: 15, status: '천둥번개' },
-  { id: 'city_02', name: '수원', temp: 5, status: '비' },
-  { id: 'city_03', name: '부산', temp: 20, status: '구름' },
-  { id: 'city_04', name: '탄천', temp: 30, status: '아주 맑음' },
-  { id: 'city_05', name: '평택', temp: 25, status: '맑음' },
-  { id: 'city_06', name: '건양', temp: -4, status: '눈' },
-])
+// 1. 배열 렌더링용 날씨 데이터 (Open-Meteo 실시간 API로 채워짐)
+const weatherList = ref([])
+const apiError = ref(false)
 
 // ---------- 검색 (디바운스) ----------
 const searchQuery = ref('')       // 입력창에 즉시 반영되는 값
@@ -33,16 +30,24 @@ const activeStatus = ref('전체')
 // ---------- 정렬 ----------
 const sortOrder = ref('default') // default | temp-desc | temp-asc | name
 
-// ---------- 로딩 흉내 ----------
+// ---------- 실시간 날씨 로딩 ----------
 const loading = ref(true)
-onMounted(() => {
-  setTimeout(() => {
+onMounted(async () => {
+  try {
+    weatherList.value = await fetchWeatherForCities(WEATHER_CITIES)
+    apiError.value = weatherList.value.every((c) => c.error)
+  } catch {
+    apiError.value = true
+  } finally {
     loading.value = false
-  }, 800)
+  }
 })
 
 // ---------- 선택된 도시 ----------
 const selectedCity = ref('')
+const selectedCityId = computed(
+  () => weatherList.value.find((c) => c.name === selectedCity.value)?.id ?? null,
+)
 
 // 검색어 + 상태 필터 적용
 const filteredList = computed(() => {
@@ -75,26 +80,34 @@ const sortedList = computed(() => {
   }
 })
 
-// 평균 기온 (필터링된 리스트 기준)
+// 평균 기온 (필터링된 리스트 기준, API 조회 실패 도시는 제외)
+const knownTempList = computed(() => filteredList.value.filter((c) => c.temp !== null))
+
 const averageTemp = computed(() => {
-  if (filteredList.value.length === 0) return null
-  const sum = filteredList.value.reduce((acc, c) => acc + c.temp, 0)
-  return (sum / filteredList.value.length).toFixed(1)
+  if (knownTempList.value.length === 0) return null
+  const sum = knownTempList.value.reduce((acc, c) => acc + c.temp, 0)
+  return (sum / knownTempList.value.length).toFixed(1)
 })
 
 // 최고 / 최저 기온 도시 (필터링된 리스트 기준, 동률이면 첫 번째)
 const maxTempCity = computed(() => {
-  if (filteredList.value.length === 0) return null
-  return filteredList.value.reduce((a, b) => (b.temp > a.temp ? b : a))
+  if (knownTempList.value.length === 0) return null
+  return knownTempList.value.reduce((a, b) => (b.temp > a.temp ? b : a))
 })
 const minTempCity = computed(() => {
-  if (filteredList.value.length === 0) return null
-  return filteredList.value.reduce((a, b) => (b.temp < a.temp ? b : a))
+  if (knownTempList.value.length === 0) return null
+  return knownTempList.value.reduce((a, b) => (b.temp < a.temp ? b : a))
 })
 
 // 카드 클릭 -> 상태바에 표시
 const selectCity = (cityName) => {
   selectedCity.value = cityName
+}
+
+// 지도 마커 클릭 -> id로 도시를 찾아 동일한 선택 로직 재사용
+const selectCityById = (id) => {
+  const city = weatherList.value.find((c) => c.id === id)
+  if (city) selectCity(city.name)
 }
 
 // 상세보기 클릭 (버블링 방지: @click.stop)
@@ -105,7 +118,8 @@ const showDetail = (cityName, status) => {
 
 <template>
   <div class="card-panel">
-    <p class="panel-title">🌤️ 과제 1: 날씨 (Mockup)</p>
+    <p class="panel-title">🌤️ 과제 1: 날씨 (Mockup) <span class="live-dot" title="Open-Meteo 실시간 연동"></span></p>
+    <p v-if="apiError" class="api-error">⚠️ 날씨 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
 
     <!-- 검색 -->
     <div class="section">
@@ -172,9 +186,10 @@ const showDetail = (cityName, status) => {
               <span v-if="maxTempCity && city.id === maxTempCity.id" class="mark" title="최고 기온">🏆</span>
               <span v-if="minTempCity && city.id === minTempCity.id" class="mark" title="최저 기온">🥶</span>
             </div>
-            <div class="temp-line">현재 기온: {{ city.temp }}°C</div>
+            <div class="temp-line">현재 기온: {{ city.temp === null ? '조회 실패' : `${city.temp}°C` }}</div>
 
-            <span v-if="city.temp >= 25" class="badge hot">🔥 더움 (25도 이상)</span>
+            <span v-if="city.temp === null" class="badge unknown">❓ 정보 없음</span>
+            <span v-else-if="city.temp >= 25" class="badge hot">🔥 더움 (25도 이상)</span>
             <span v-else-if="city.temp >= 10" class="badge cool">☁️ 선선함 (10~24도)</span>
             <span v-else class="badge cold">🧊 추움 (10도 미만)</span>
           </div>
@@ -189,6 +204,12 @@ const showDetail = (cityName, status) => {
       <p v-if="!loading && sortedList.length === 0" class="empty">검색 결과가 없습니다.</p>
     </div>
 
+    <!-- 지도 -->
+    <div class="section" v-if="!loading">
+      <p class="section-title">🗺️ 지도로 보기</p>
+      <WeatherMap :cities="sortedList" :selected-id="selectedCityId" @select-city="selectCityById" />
+    </div>
+
     <!-- 상태바 -->
     <div class="status-bar">
       {{ selectedCity ? `${selectedCity}이 선택되었습니다.` : '카드를 클릭하거나 검색해 보세요.' }}
@@ -200,22 +221,62 @@ const showDetail = (cityName, status) => {
 * { box-sizing: border-box; }
 
 .card-panel {
-  background: #fff;
+  position: relative;
+  overflow: hidden;
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
   width: 100%;
   max-width: 640px;
   border-radius: 18px;
-  box-shadow: 0 8px 24px rgba(30, 60, 100, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   padding: 28px;
   font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+.card-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--magpie-gradient);
 }
 .panel-title {
   font-size: 22px;
   font-weight: 700;
-  color: #1c2b3a;
+  color: var(--color-heading);
   margin: 0 0 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2ecc71;
+  box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.6);
+  animation: live-pulse 1.8s infinite;
+}
+@keyframes live-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.5); }
+  70% { box-shadow: 0 0 0 7px rgba(46, 204, 113, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+}
+.api-error {
+  background: #fdecea;
+  color: #c0392b;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin: 0 0 16px 0;
+}
+.badge.unknown {
+  background: #9aa5b1;
 }
 .section {
-  background: #f4f7fb;
+  background: var(--color-background-mute);
+  border: 1px solid var(--color-border);
   border-radius: 14px;
   padding: 18px 20px;
   margin-bottom: 16px;
@@ -223,28 +284,31 @@ const showDetail = (cityName, status) => {
 .section-title {
   font-weight: 700;
   font-size: 15px;
-  color: #2a3b4d;
+  color: var(--color-heading);
   margin: 0 0 10px 0;
 }
 input[type="text"] {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #cdd9e5;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 14px;
   outline: none;
-  background: #fff;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 input[type="text"]:focus {
-  border-color: #5b8def;
+  border-color: var(--magpie-accent);
 }
 .search-status {
   margin-top: 8px;
   font-size: 13px;
-  color: #6b7a89;
+  color: var(--color-text);
+  opacity: 0.75;
 }
 .search-status b {
-  color: #24405c;
+  color: var(--color-heading);
+  opacity: 1;
 }
 
 /* 컨트롤 영역 */
@@ -262,7 +326,7 @@ input[type="text"]:focus {
 .control-label {
   font-size: 13px;
   font-weight: 700;
-  color: #45566a;
+  color: var(--color-text);
   min-width: 60px;
 }
 .chip-group {
@@ -271,66 +335,67 @@ input[type="text"]:focus {
   gap: 6px;
 }
 .chip {
-  border: 1px solid #cdd9e5;
-  background: #fff;
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
   border-radius: 20px;
   padding: 5px 12px;
   font-size: 12px;
-  color: #45566a;
+  color: var(--color-text);
   cursor: pointer;
 }
 .chip.active {
-  background: #5b8def;
-  border-color: #5b8def;
+  background: var(--magpie-gradient);
+  border-color: transparent;
   color: #fff;
 }
 .sort-select {
-  border: 1px solid #cdd9e5;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 6px 10px;
   font-size: 13px;
-  background: #fff;
-  color: #34495e;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 .avg-temp {
   font-size: 14px;
   font-weight: 700;
-  color: #2f6fef;
+  color: var(--magpie-accent);
 }
 
 /* 로딩 */
 .loading {
   text-align: center;
   padding: 24px 0;
-  color: #8a97a5;
+  color: var(--color-text);
+  opacity: 0.7;
   font-size: 14px;
 }
 
 /* 카드 */
 .weather-card {
-  background: #fff;
+  background: var(--color-background);
   border-radius: 12px;
   padding: 14px 16px;
   margin-bottom: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   cursor: pointer;
   transition: box-shadow 0.15s ease, transform 0.15s ease;
-  border: 1px solid transparent;
+  border: 1px solid var(--color-border);
 }
 .weather-card:hover {
-  box-shadow: 0 4px 10px rgba(0,0,0,0.10);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
   transform: translateY(-1px);
 }
 .weather-card.selected {
-  border-color: #5b8def;
+  border-color: var(--magpie-accent);
 }
 .weather-info .city-line {
   font-weight: 700;
   font-size: 15px;
-  color: #1c2b3a;
+  color: var(--color-heading);
   margin-bottom: 4px;
   display: flex;
   align-items: center;
@@ -339,7 +404,7 @@ input[type="text"]:focus {
 .mark { font-size: 13px; }
 .weather-info .temp-line {
   font-size: 13px;
-  color: #5b6b7a;
+  color: var(--color-text);
   margin-bottom: 8px;
 }
 .badge {
@@ -353,20 +418,21 @@ input[type="text"]:focus {
   color: #fff;
 }
 .badge.hot { background: #ef5b5b; }
-.badge.cool { background: #5b9bef; }
-.badge.cold { background: #6b7cff; }
+.badge.cool { background: var(--magpie-blue); }
+.badge.cold { background: var(--magpie-violet); }
 .detail-btn {
-  background: #fff;
-  border: 1px solid #cdd9e5;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 8px 14px;
   font-size: 13px;
-  color: #34495e;
+  color: var(--color-text);
   cursor: pointer;
   white-space: nowrap;
 }
 .detail-btn:hover {
-  background: #eef3f9;
+  background: var(--magpie-accent-soft);
+  border-color: var(--magpie-accent);
 }
 
 /* 리스트 애니메이션 */
@@ -387,8 +453,8 @@ input[type="text"]:focus {
 
 .status-bar {
   text-align: center;
-  background: #e5f6ec;
-  color: #2f8f52;
+  background: var(--magpie-accent-soft);
+  color: var(--magpie-accent);
   font-size: 14px;
   font-weight: 600;
   padding: 12px;
@@ -396,7 +462,8 @@ input[type="text"]:focus {
 }
 .empty {
   text-align: center;
-  color: #8a97a5;
+  color: var(--color-text);
+  opacity: 0.7;
   font-size: 13px;
   padding: 10px 0;
 }

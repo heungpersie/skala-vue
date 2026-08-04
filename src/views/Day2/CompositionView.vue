@@ -41,7 +41,7 @@ const removeItem = (index) => {
     <p>과일 목록: {{ items.join(', ') }}</p>
     <p>먹고 싶은 과일: <input v-model="fruit" />{{ fruit }}</p>
     <p>사용자 정보: 이름- {{ user.name }}, 나이- {{ user.age }}</p>
-    <button @click="increaseRef">Ref 변 수 증가</button>
+    <button @click="increaseRef">Ref 변수 증가</button>
     <button @click="isActive = !isActive">활성 버튼</button>
     <button @click="items.push(fruit)">과일 추가</button>
     <button @click="user.age++">사용자 나이 증가</button>
