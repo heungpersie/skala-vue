@@ -9,8 +9,8 @@ const weatherList = ref([])
 const apiError = ref(false)
 
 // ---------- 검색 (디바운스) ----------
-const searchQuery = ref('')       // 입력창에 즉시 반영되는 값
-const debouncedQuery = ref('')    // 실제 필터링에 사용되는 값 (300ms 지연)
+const searchQuery = ref('') // 입력창에 즉시 반영되는 값
+const debouncedQuery = ref('') // 실제 필터링에 사용되는 값 (300ms 지연)
 let debounceTimer = null
 
 watch(searchQuery, (newVal) => {
@@ -118,8 +118,12 @@ const showDetail = (cityName, status) => {
 
 <template>
   <div class="card-panel">
-    <p class="panel-title">🌤️ 과제 1: 날씨 (Mockup) <span class="live-dot" title="Open-Meteo 실시간 연동"></span></p>
-    <p v-if="apiError" class="api-error">⚠️ 날씨 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
+    <p class="panel-title">
+      🌤️ 과제 1: 날씨 (Mockup) <span class="live-dot" title="Open-Meteo 실시간 연동"></span>
+    </p>
+    <p v-if="apiError" class="api-error">
+      ⚠️ 날씨 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+    </p>
 
     <!-- 검색 -->
     <div class="section">
@@ -130,7 +134,9 @@ const showDetail = (cityName, status) => {
         :value="searchQuery"
         @input="searchQuery = $event.target.value"
       />
-      <p class="search-status">검색 중인 도시: <b>{{ searchQuery || '(없음)' }}</b></p>
+      <p class="search-status">
+        검색 중인 도시: <b>{{ searchQuery || '(없음)' }}</b>
+      </p>
     </div>
 
     <!-- 필터 + 정렬 컨트롤 -->
@@ -183,10 +189,16 @@ const showDetail = (cityName, status) => {
           <div class="weather-info">
             <div class="city-line">
               {{ city.name }} ({{ city.status }})
-              <span v-if="maxTempCity && city.id === maxTempCity.id" class="mark" title="최고 기온">🏆</span>
-              <span v-if="minTempCity && city.id === minTempCity.id" class="mark" title="최저 기온">🥶</span>
+              <span v-if="maxTempCity && city.id === maxTempCity.id" class="mark" title="최고 기온"
+                >🏆</span
+              >
+              <span v-if="minTempCity && city.id === minTempCity.id" class="mark" title="최저 기온"
+                >🥶</span
+              >
             </div>
-            <div class="temp-line">현재 기온: {{ city.temp === null ? '조회 실패' : `${city.temp}°C` }}</div>
+            <div class="temp-line">
+              현재 기온: {{ city.temp === null ? '조회 실패' : `${city.temp}°C` }}
+            </div>
 
             <span v-if="city.temp === null" class="badge unknown">❓ 정보 없음</span>
             <span v-else-if="city.temp >= 25" class="badge hot">🔥 더움 (25도 이상)</span>
@@ -196,7 +208,7 @@ const showDetail = (cityName, status) => {
 
           <!-- 버블링 없이(.stop) 상세보기 -->
           <button class="detail-btn" @click.stop="showDetail(city.name, city.status)">
-            상세보기
+            상세 정보 및 미세먼지
           </button>
         </div>
       </TransitionGroup>
@@ -207,7 +219,11 @@ const showDetail = (cityName, status) => {
     <!-- 지도 -->
     <div class="section" v-if="!loading">
       <p class="section-title">🗺️ 지도로 보기</p>
-      <WeatherMap :cities="sortedList" :selected-id="selectedCityId" @select-city="selectCityById" />
+      <WeatherMap
+        :cities="sortedList"
+        :selected-id="selectedCityId"
+        @select-city="selectCityById"
+      />
     </div>
 
     <!-- 상태바 -->
@@ -218,7 +234,9 @@ const showDetail = (cityName, status) => {
 </template>
 
 <style scoped>
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 .card-panel {
   position: relative;
@@ -230,7 +248,7 @@ const showDetail = (cityName, status) => {
   border-radius: 18px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   padding: 28px;
-  font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
 }
 .card-panel::before {
   content: '';
@@ -259,9 +277,15 @@ const showDetail = (cityName, status) => {
   animation: live-pulse 1.8s infinite;
 }
 @keyframes live-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.5); }
-  70% { box-shadow: 0 0 0 7px rgba(46, 204, 113, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(46, 204, 113, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+  }
 }
 .api-error {
   background: #fdecea;
@@ -287,7 +311,7 @@ const showDetail = (cityName, status) => {
   color: var(--color-heading);
   margin: 0 0 10px 0;
 }
-input[type="text"] {
+input[type='text'] {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--color-border);
@@ -297,7 +321,7 @@ input[type="text"] {
   background: var(--color-background);
   color: var(--color-text);
 }
-input[type="text"]:focus {
+input[type='text']:focus {
   border-color: var(--magpie-accent);
 }
 .search-status {
@@ -380,13 +404,15 @@ input[type="text"]:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
   border: 1px solid var(--color-border);
 }
 .weather-card:hover {
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
 }
 .weather-card.selected {
@@ -401,7 +427,9 @@ input[type="text"]:focus {
   align-items: center;
   gap: 6px;
 }
-.mark { font-size: 13px; }
+.mark {
+  font-size: 13px;
+}
 .weather-info .temp-line {
   font-size: 13px;
   color: var(--color-text);
@@ -417,9 +445,15 @@ input[type="text"]:focus {
   border-radius: 20px;
   color: #fff;
 }
-.badge.hot { background: #ef5b5b; }
-.badge.cool { background: var(--magpie-blue); }
-.badge.cold { background: var(--magpie-violet); }
+.badge.hot {
+  background: #ef5b5b;
+}
+.badge.cool {
+  background: var(--magpie-blue);
+}
+.badge.cold {
+  background: var(--magpie-violet);
+}
 .detail-btn {
   background: var(--color-background);
   border: 1px solid var(--color-border);

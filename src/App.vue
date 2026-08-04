@@ -11,6 +11,16 @@ function isGroupActive(group) {
 
 const nav = [
   {
+    category: '계정',
+    groups: [
+      {
+        label: 'login',
+        links: [{ to: '/login', label: 'Login' }],
+      },
+
+    ],
+  },
+  {
     category: '과제',
     groups: [
       {
@@ -20,7 +30,12 @@ const nav = [
           { to: '/WeatherComposition', label: 'WeatherComposition' },
           { to: '/WeatherParent', label: 'WeatherParent' },
           { to: '/weather-router', label: 'WeatherRouter' },
+          { to: '/weather-store', label: 'WeatherStore' },
         ],
+      },
+      {
+        label: 'Heungbu and Magpie',
+        links: [{ to: '/MagpieHeung', label: 'MagpieHeung' }],
       },
     ],
   },
@@ -56,7 +71,7 @@ const nav = [
         label: 'Day 3',
         links: [
           { to: '/UseRouter', label: 'UseRouter' },
-          { to: '/DynamicComponentParent', label: 'DynamicComponentParent' },
+          { to: '/OpenWeatherTest', label: 'OpenWeatherTest' },
           { to: '/TeleportParent', label: 'TeleportParent' },
           { to: '/TransitionParent', label: 'TransitionParent' },
         ],

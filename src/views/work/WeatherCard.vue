@@ -15,7 +15,9 @@ const emit = defineEmits(['select-card', 'click-detail'])
   <div class="weather-card" :class="{ selected: isSelected }" @click="emit('select-card', city)">
     <div class="weather-info">
       <div class="city-line">{{ city.name }} ({{ city.status }})</div>
-      <div class="temp-line">현재 기온: {{ city.temp === null ? '조회 실패' : `${city.temp}°C` }}</div>
+      <div class="temp-line">
+        현재 기온: {{ city.temp === null ? '조회 실패' : `${city.temp}°C` }}
+      </div>
 
       <!-- [과제1-2] 조건부 렌더링 -->
       <span v-if="city.temp === null" class="badge unknown">❓ 정보 없음</span>
@@ -25,7 +27,9 @@ const emit = defineEmits(['select-card', 'click-detail'])
     </div>
 
     <!-- @click.stop: 카드 선택 이벤트로 버블링되지 않게 차단 -->
-    <button class="detail-btn" @click.stop="emit('click-detail', city)">상세보기</button>
+    <button class="detail-btn" @click.stop="emit('click-detail', city)">
+      상세보기 및 미세먼지
+    </button>
   </div>
 </template>
 

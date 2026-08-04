@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "node server.js",
+    "dev:all": "run-p dev server",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "run-s \"lint:*\"",
@@ -13,6 +15,7 @@
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
+    "axios": "^1.19.0",
     "leaflet": "^1.9.4",
     "pinia": "^4.0.2",
     "vue": "^3.5.40",

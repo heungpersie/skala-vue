@@ -6,8 +6,9 @@ import { useRoute, useRouter } from 'vue-router'
 const route = useRoute()
 const router = useRouter()
 
+// 404는 앱 어디서든 올 수 있으므로 특정 섹션으로 고정하지 않고, 바로 이전 페이지로 되돌아간다.
 const goHome = () => {
-  router.push('/weather-router')
+  router.back()
 }
 </script>
 
@@ -18,7 +19,7 @@ const goHome = () => {
       요청하신 경로 <code>{{ route.fullPath }}</code
       >를 찾을 수 없습니다.
     </p>
-    <p class="message">404 좌표밖의 지점 4040 New Era Era</p>
+    <p class="message">404 좌표밖의 지점 404 New Era Era</p>
     <button class="home-btn" @click="goHome">← 메인 대시보드로 돌아가기</button>
   </div>
 </template>

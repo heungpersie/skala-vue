@@ -1,9 +1,6 @@
 <script setup>
-/* ── [과제5 / Store 실습] WeatherCardStore.vue ──
-   WeatherCard.vue를 기반으로, configStore(Pinia)의 단위 설정에 따라
-   기온 표시를 섭씨/화씨로 변환해서 보여준다. 등급은 배지 대신 카드 배경/좌측 색상으로 표현한다. */
 import { computed } from 'vue'
-import { useConfigStore } from '@/stores/configStore'
+import { useConfigStore } from '../store/configStore'
 
 const props = defineProps({
   city: { type: Object, required: true },
@@ -15,15 +12,14 @@ const emit = defineEmits(['select-card', 'click-detail', 'remove'])
 const configStore = useConfigStore()
 
 const displayTemp = computed(() => {
-  const rawTemp = props.city.temp // 기본 원본 데이터는 섭씨 숫자
+  const rawTemp = props.city.temp
   if (rawTemp === null) return null
   if (configStore.unit === 'fahrenheit') {
-    return Math.round((rawTemp * 9) / 5 + 32) // 화씨 변환 연산
+    return Math.round((rawTemp * 9) / 5 + 32)
   }
-  return rawTemp // 'celsius'일 때는 원본 그대로 반환
+  return rawTemp
 })
 
-// 날씨 상태 텍스트(OpenWeatherMap 한글 설명)에 맞는 이모지를 골라준다
 const statusEmoji = computed(() => {
   const status = props.city.status ?? ''
   if (status.includes('눈')) return '❄️'
@@ -36,7 +32,6 @@ const statusEmoji = computed(() => {
   return '🌡️'
 })
 
-// 온도 구간에 따라 카드 배경/좌측 강조 색을 바꾼다 (기존 배지의 등급 판정 기준을 그대로 이어받음)
 const tempRangeClass = computed(() => {
   const t = props.city.temp
   if (t === null) return 'range-unknown'
@@ -52,7 +47,6 @@ const tempRangeClass = computed(() => {
     :class="[tempRangeClass, { selected: isSelected }]"
     @click="emit('select-card', city)"
   >
-    <!-- @click.stop: 카드 선택 이벤트로 버블링되지 않게 차단 -->
     <button class="remove-btn" title="목록에서 삭제" @click.stop="emit('remove', city.id)">×</button>
 
     <div class="city-col">
@@ -99,7 +93,6 @@ const tempRangeClass = computed(() => {
   border-color: var(--magpie-accent);
 }
 
-/* 온도 구간별 카드 배경/좌측 강조 색 */
 .weather-card.range-hot {
   background: rgba(239, 91, 91, 0.1);
   border-left-color: #ef5b5b;
@@ -168,7 +161,6 @@ const tempRangeClass = computed(() => {
   border-color: var(--magpie-accent);
 }
 
-/* 카드 우상단에 조용히 얹히는 삭제 아이콘. 평소엔 옅게, 호버 시에만 위험색으로 도드라진다 */
 .remove-btn {
   position: absolute;
   top: 8px;
@@ -196,7 +188,8 @@ const tempRangeClass = computed(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .weather-card {
+  .weather-card,
+  .remove-btn {
     transition: none !important;
   }
 }

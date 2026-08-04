@@ -1,4 +1,8 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+
+import { useAuthStore } from '@/stores/auth.js'
+import MockDash from '@/views/work/MockDash.vue'
+import LoginView from '@/views/work/LoginView.vue'
 import HomeView from '../views/Day1/HomeView.vue'
 
 const router = createRouter({
@@ -8,6 +12,17 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: LoginView,
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: MockDash,
+      meta: { requiresAuth: true },
     },
     {
       path: '/about',
@@ -51,6 +66,11 @@ const router = createRouter({
       path: '/WeatherMockup',
       name: 'WeatherMockup',
       component: () => import('../views/work/WeatherMockup.vue'),
+    },
+    {
+      path: '/Login',
+      name: 'Login',
+      component: () => import('../views/work/LoginView.vue'),
     },
     {
       path: '/Composition',
@@ -102,6 +122,11 @@ const router = createRouter({
       name: 'UseRouter',
       component: () => import('../views/Day3/UseRouter.vue'),
     },
+    {
+      path: '/OpenWeatherTest',
+      name: 'OpenWeatherTest',
+      component: () => import('../views/Day3/OpenWeatherTest.vue'),
+    },
     // ── [Router 실습] 지연 로딩 + 동적 경로 매칭 + Catch-all Route ──
     {
       path: '/weather-router',
@@ -118,6 +143,35 @@ const router = createRouter({
       name: 'WeatherDetail',
       component: () => import('../views/WeatherDetailView.vue'),
     },
+
+    // ── [Store 실습 / 과제5] 과제4를 기반으로 Pinia configStore(단위 설정)를 적용 ──
+    {
+      path: '/weather-store',
+      name: 'WeatherStoreHome',
+      component: () => import('../views/WeatherStoreHomeView.vue'),
+    },
+    {
+      path: '/weather-store/about',
+      name: 'WeatherStoreAbout',
+      component: () => import('../views/WeatherStoreAboutView.vue'),
+    },
+    {
+      path: '/weather-store/:cityId',
+      name: 'WeatherStoreDetail',
+      component: () => import('../views/WeatherStoreDetailView.vue'),
+    },
+    {
+      path: '/MagpieHeung',
+      name: 'MagpieHeung',
+      component: () => import('../views/work/MagpieHeungView.vue'),
+    },
+
+    // TEMP: members/jaeheung1 폴더 미리보기 검증용 (검증 끝나면 제거)
+    {
+      path: '/preview-jaeheung1',
+      name: 'PreviewJaeheung1',
+      component: () => import('../members/jaeheung1/index.vue'),
+    },
     // Catch-all Route: 위 규칙에 매칭되지 않는 모든 경로 (반드시 배열의 마지막에 위치)
     {
       path: '/:pathMatch(.*)*',
@@ -125,6 +179,21 @@ const router = createRouter({
       component: () => import('../views/NotFoundView.vue'),
     },
   ],
+})
+
+router.beforeEach((to) => {
+  const authStore = useAuthStore()
+
+  if (to.meta.requiresAuth && !authStore.isLoggedIn) {
+    return {
+      name: 'login',
+      query: { redirect: to.fullPath },
+    }
+  }
+
+  if (to.name === 'login' && authStore.isLoggedIn) {
+    return { name: 'dashboard' }
+  }
 })
 
 export default router

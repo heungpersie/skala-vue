@@ -10,7 +10,7 @@ const quickLinks = [
 <template>
   <div class="home">
     <span class="badge">🐦‍⬛ Skala Vue</span>
-    <h1>Vue 3 실습 아카이브</h1>
+    <h1>날씨 알려주는 까치</h1>
     <p class="lead">
       Composition API부터 라우터, 실전 날씨 대시보드까지 — Skala 과정에서 다룬 Vue 3 실습을 한
       곳에 모았습니다.

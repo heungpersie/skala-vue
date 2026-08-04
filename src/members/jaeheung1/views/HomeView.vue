@@ -1,24 +1,24 @@
 <script setup>
-/* ── [Store 실습 / 과제5] WeatherStoreHomeView.vue ──
-   WeatherHomeView.vue(과제4)를 기반으로, Pinia configStore를 붙여 날씨 단위(섭씨/화씨)를
-   전환할 수 있게 만든 메인 날씨 대시보드. 도시 목록/실시간 API는 과제4(Open-Meteo)와 분리된
-   useOpenWeatherCities 싱글턴 상태로 Axios + OpenWeatherMap을 사용한다. */
+/* 날씨 대시보드 메인 화면. Pinia configStore로 단위(섭씨/화씨)를 전환할 수 있고,
+   Axios + OpenWeatherMap으로 도시 날씨를 실시간 조회한다.
+   원래는 vue-router로 상세/소개 페이지를 이동했지만, 이 폴더는 다른 화면 모음
+   사이트에 단독으로 옮겨져 쓰이므로 그 라우트가 없다. 대신 emit으로 부모(index.vue)에게
+   화면 전환을 요청한다. */
 import { ref, computed, watch, watchEffect, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import BaseDashboardCard from '@/components/exercise/BaseDashboardCard.vue'
-import SearchBar from '@/components/exercise/SearchBar.vue'
-import WeatherCardStore from '@/components/exercise/WeatherCardStore.vue'
-import UnitToggler from '@/components/exercise/UnitToggler.vue'
-import MagpieNest from '@/components/exercise/MagpieNest.vue'
-import WeatherMap from '@/views/work/WeatherMap.vue'
-import { useOpenWeatherCities } from '@/composables/useOpenWeatherCities'
-import { searchOpenWeatherCities } from '@/composables/useOpenWeatherApi'
-import { useConfigStore } from '@/stores/configStore'
+import BaseDashboardCard from '../components/BaseDashboardCard.vue'
+import SearchBar from '../components/SearchBar.vue'
+import WeatherCardStore from '../components/WeatherCardStore.vue'
+import UnitToggler from '../components/UnitToggler.vue'
+import MagpieNest from '../components/MagpieNest.vue'
+import WeatherMap from '../components/WeatherMap.vue'
+import { useOpenWeatherCities } from '../composables/useOpenWeatherCities.js'
+import { searchOpenWeatherCities } from '../composables/useOpenWeatherApi.js'
+import { useConfigStore } from '../store/configStore.js'
 
-const router = useRouter()
+const emit = defineEmits(['show-about', 'show-detail'])
+
 const configStore = useConfigStore()
 
-/* ── 반응형 상태 + 날씨 데이터 배열 (Home/Detail 공유, Axios + OpenWeatherMap API) ── */
 const {
   cities: weatherList,
   loading,
@@ -42,15 +42,14 @@ const handleRestoreDefaults = async () => {
   }
 }
 
-const searchQuery = ref('') // 검색어
-const selectedCityInfo = ref(null) // 선택된 도시
+const searchQuery = ref('')
+const selectedCityInfo = ref(null)
 
 const activeStatus = ref('전체')
 const statusOptions = computed(() => ['전체', ...new Set(weatherList.value.map((c) => c.status))])
 
 const sortOrder = ref('default')
 
-/* ── 검색 도시 (computed 활용) ── */
 const filteredWeatherList = computed(() => {
   let list = weatherList.value
 
@@ -63,7 +62,6 @@ const filteredWeatherList = computed(() => {
   return list
 })
 
-// 정렬 (원본 훼손 방지를 위해 얕은 복사 후 정렬)
 const sortedList = computed(() => {
   const list = [...filteredWeatherList.value]
   switch (sortOrder.value) {
@@ -85,17 +83,15 @@ const averageTemp = computed(() => {
   return sum / known.length
 })
 
-/* ── [Store 실습] 단위 설정(configStore)에 따라 평균 기온 표시를 변환 ── */
 const displayAverageTemp = computed(() => {
   const rawTemp = averageTemp.value
   if (rawTemp === null) return null
   if (configStore.unit === 'fahrenheit') {
-    return ((rawTemp * 9) / 5 + 32).toFixed(1) // 화씨 변환 연산
+    return ((rawTemp * 9) / 5 + 32).toFixed(1)
   }
-  return rawTemp.toFixed(1) // 'celsius'일 때는 원본 그대로 반환
+  return rawTemp.toFixed(1)
 })
 
-/* ── 상태 바 문구 ── */
 const statusMessage = computed(() =>
   selectedCityInfo.value
     ? `${selectedCityInfo.value.name}이 선택되었습니다.`
@@ -112,7 +108,6 @@ watchEffect(() => {
   )
 })
 
-/* ── 자식 컴포넌트가 emit한 이벤트를 받는 핸들러 ── */
 const handleUpdateQuery = (value) => {
   searchQuery.value = value
 }
@@ -122,7 +117,7 @@ const selectCity = (city) => {
 }
 
 const showDetail = (city) => {
-  router.push('/weather-store/' + city.id)
+  emit('show-detail', city.id)
 }
 
 const handleRemove = (id) => {
@@ -130,17 +125,14 @@ const handleRemove = (id) => {
   removeCity(id)
 }
 
-// 지도 마커 클릭 -> 동일한 선택 로직 재사용
 const selectedCityId = computed(() => selectedCityInfo.value?.id ?? null)
 const selectCityById = (id) => {
   const city = weatherList.value.find((c) => c.id === id)
   if (city) selectCity(city)
 }
 
-/* ── [까치 둥지] 선택된 도시가 있으면 그 도시, 없으면 목록 첫 도시의 날씨를 기준으로 삼는다 ── */
 const nestCity = computed(() => selectedCityInfo.value ?? sortedList.value[0] ?? null)
 
-/* ── 목록에 없는 도시를 검색해서 추가 ── */
 const citySearchQuery = ref('')
 const citySearchResults = ref([])
 const citySearching = ref(false)
@@ -182,117 +174,116 @@ const handleAddCity = async (result) => {
 
   <div class="page-layout">
     <div class="card-panel">
-      <p class="panel-title">
-        🌤️ 세계 날씨 <span class="live-dot" title="Axios + OpenWeatherMap 실시간 연동"></span>
-      </p>
-      <div class="link-row">
-        <RouterLink to="/weather-store/about" class="about-link">ℹ️ 이 실습 소개</RouterLink>
-        <RouterLink to="/no-such-page" class="about-link"> 🚧 키키 보러가기 -> </RouterLink>
-        <button
-          v-if="removedDefaultIds.length > 0"
-          class="restore-link"
-          :disabled="restoring"
-          @click="handleRestoreDefaults"
-        >
-          {{ restoring ? '복원 중...' : '↺ 삭제한 기본 도시 복원' }}
+    <p class="panel-title">
+      🌤️ 세계 날씨 <span class="live-dot" title="Axios + OpenWeatherMap 실시간 연동"></span>
+    </p>
+    <div class="link-row">
+      <button class="about-link" @click="emit('show-about')">ℹ️ 이 실습 소개</button>
+      <button
+        v-if="removedDefaultIds.length > 0"
+        class="restore-link"
+        :disabled="restoring"
+        @click="handleRestoreDefaults"
+      >
+        {{ restoring ? '복원 중...' : '↺ 삭제한 기본 도시 복원' }}
+      </button>
+      <UnitToggler />
+    </div>
+    <p v-if="apiError" class="api-error">
+      ⚠️ 날씨 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+    </p>
+
+    <BaseDashboardCard title="🔍 도시 검색 (한글 즉시 동기화)">
+      <SearchBar :query="searchQuery" @update-query="handleUpdateQuery" />
+    </BaseDashboardCard>
+
+    <BaseDashboardCard title="➕ 도시 추가 (Axios + OpenWeatherMap 검색)">
+      <form class="add-city" @submit.prevent="searchForCity">
+        <input v-model="citySearchQuery" type="text" placeholder="예: 도쿄, 뉴욕, 파리..." />
+        <button type="submit" :disabled="citySearching">
+          {{ citySearching ? '검색 중...' : '검색' }}
         </button>
-        <UnitToggler />
-      </div>
-      <p v-if="apiError" class="api-error">
-        ⚠️ 날씨 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
-      </p>
+      </form>
 
-      <BaseDashboardCard title="🔍 도시 검색">
-        <SearchBar :query="searchQuery" @update-query="handleUpdateQuery" />
-      </BaseDashboardCard>
+      <p v-if="citySearchError" class="add-city-error">{{ citySearchError }}</p>
 
-      <BaseDashboardCard title="➕ 도시 추가 (Axios + OpenWeatherMap 검색)">
-        <form class="add-city" @submit.prevent="searchForCity">
-          <input v-model="citySearchQuery" type="text" placeholder="예: 도쿄, 뉴욕, 파리..." />
-          <button type="submit" :disabled="citySearching">
-            {{ citySearching ? '검색 중...' : '검색' }}
+      <ul v-if="citySearchResults.length" class="add-city-results">
+        <li v-for="result in citySearchResults" :key="result.id">
+          <span>{{ result.name }}</span>
+          <button
+            class="add-btn"
+            :disabled="addingCityId === result.id"
+            @click="handleAddCity(result)"
+          >
+            {{ addingCityId === result.id ? '추가 중...' : '+ 추가' }}
           </button>
-        </form>
+        </li>
+      </ul>
+    </BaseDashboardCard>
 
-        <p v-if="citySearchError" class="add-city-error">{{ citySearchError }}</p>
-
-        <ul v-if="citySearchResults.length" class="add-city-results">
-          <li v-for="result in citySearchResults" :key="result.id">
-            <span>{{ result.name }}</span>
+    <BaseDashboardCard title="⚙️ 필터 & 정렬">
+      <div class="controls">
+        <div class="control-row">
+          <span class="control-label">상태 필터</span>
+          <div class="chip-group">
             <button
-              class="add-btn"
-              :disabled="addingCityId === result.id"
-              @click="handleAddCity(result)"
+              v-for="status in statusOptions"
+              :key="status"
+              class="chip"
+              :class="{ active: activeStatus === status }"
+              @click="activeStatus = status"
             >
-              {{ addingCityId === result.id ? '추가 중...' : '+ 추가' }}
+              {{ status }}
             </button>
-          </li>
-        </ul>
-      </BaseDashboardCard>
-
-      <BaseDashboardCard title="⚙️ 필터 & 정렬">
-        <div class="controls">
-          <div class="control-row">
-            <span class="control-label">상태 필터</span>
-            <div class="chip-group">
-              <button
-                v-for="status in statusOptions"
-                :key="status"
-                class="chip"
-                :class="{ active: activeStatus === status }"
-                @click="activeStatus = status"
-              >
-                {{ status }}
-              </button>
-            </div>
-          </div>
-
-          <div class="control-row">
-            <span class="control-label">정렬</span>
-            <select v-model="sortOrder" class="sort-select">
-              <option value="default">기본순</option>
-              <option value="temp-desc">기온 높은순</option>
-              <option value="temp-asc">기온 낮은순</option>
-              <option value="name">이름순</option>
-            </select>
-          </div>
-
-          <div class="control-row" v-if="averageTemp !== null">
-            <span class="control-label">평균 기온</span>
-            <span class="avg-temp">{{ displayAverageTemp }}{{ configStore.unitSymbol }}</span>
           </div>
         </div>
-      </BaseDashboardCard>
 
-      <BaseDashboardCard title="📍 지역별 날씨 현황">
-        <div v-if="loading" class="loading">날씨 불러오는 중...</div>
+        <div class="control-row">
+          <span class="control-label">정렬</span>
+          <select v-model="sortOrder" class="sort-select">
+            <option value="default">기본순</option>
+            <option value="temp-desc">기온 높은순</option>
+            <option value="temp-asc">기온 낮은순</option>
+            <option value="name">이름순</option>
+          </select>
+        </div>
 
-        <TransitionGroup v-else name="card-list" tag="div" class="card-list">
-          <WeatherCardStore
-            v-for="city in sortedList"
-            :key="city.id"
-            :city="city"
-            :is-selected="selectedCityInfo?.id === city.id"
-            @select-card="selectCity"
-            @click-detail="showDetail"
-            @remove="handleRemove"
-          />
-        </TransitionGroup>
+        <div class="control-row" v-if="averageTemp !== null">
+          <span class="control-label">평균 기온</span>
+          <span class="avg-temp">{{ displayAverageTemp }}{{ configStore.unitSymbol }}</span>
+        </div>
+      </div>
+    </BaseDashboardCard>
 
-        <p v-if="!loading && sortedList.length === 0" class="empty">
-          '{{ searchQuery }}' 검색 결과와 일치하는 도시가 없습니다.
-        </p>
-      </BaseDashboardCard>
+    <BaseDashboardCard title="📍 지역별 날씨 현황">
+      <div v-if="loading" class="loading">날씨 불러오는 중...</div>
 
-      <BaseDashboardCard title="🗺️ 지도로 보기" v-if="!loading">
-        <WeatherMap
-          :cities="sortedList"
-          :selected-id="selectedCityId"
-          @select-city="selectCityById"
+      <TransitionGroup v-else name="card-list" tag="div" class="card-list">
+        <WeatherCardStore
+          v-for="city in sortedList"
+          :key="city.id"
+          :city="city"
+          :is-selected="selectedCityInfo?.id === city.id"
+          @select-card="selectCity"
+          @click-detail="showDetail"
+          @remove="handleRemove"
         />
-      </BaseDashboardCard>
+      </TransitionGroup>
 
-      <div class="status-bar">{{ statusMessage }}</div>
+      <p v-if="!loading && sortedList.length === 0" class="empty">
+        '{{ searchQuery }}' 검색 결과와 일치하는 도시가 없습니다.
+      </p>
+    </BaseDashboardCard>
+
+    <BaseDashboardCard title="🗺️ 지도로 보기" v-if="!loading">
+      <WeatherMap
+        :cities="sortedList"
+        :selected-id="selectedCityId"
+        @select-city="selectCityById"
+      />
+    </BaseDashboardCard>
+
+    <div class="status-bar">{{ statusMessage }}</div>
     </div>
 
     <MagpieNest v-if="!loading" size="large" floating :city="nestCity" />
@@ -304,10 +295,10 @@ const handleAddCity = async (result) => {
   width: 100%;
   margin: 0 0 28px;
   text-align: center;
-  font-size: clamp(2.6rem, 6vw, 6rem);
+  font-size: clamp(2rem, 5vw, 4rem);
   font-weight: 900;
   letter-spacing: 0.05em;
-  color: #000;
+  color: var(--color-heading);
   box-sizing: border-box;
 }
 
@@ -333,7 +324,7 @@ const handleAddCity = async (result) => {
   background: var(--color-background-soft);
   border: 1px solid var(--color-border);
   width: 100%;
-  max-width: 800px;
+  max-width: 760px;
   border-radius: 18px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   padding: 28px;
@@ -348,15 +339,6 @@ const handleAddCity = async (result) => {
   right: 0;
   height: 4px;
   background: var(--magpie-gradient);
-}
-.panel-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--color-heading);
-  margin: 0 0 6px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 .live-dot {
   width: 8px;
@@ -383,9 +365,14 @@ const handleAddCity = async (result) => {
   margin-bottom: 16px;
 }
 .about-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
   font-size: 13px;
   color: var(--magpie-accent);
   text-decoration: none;
+  cursor: pointer;
 }
 .about-link:hover {
   text-decoration: underline;
@@ -583,7 +570,7 @@ const handleAddCity = async (result) => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * {
+  .card-panel * {
     transition: none !important;
   }
 }
