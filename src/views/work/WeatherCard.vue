@@ -2,12 +2,16 @@
 /* ── [과제3-4] WeatherCard.vue ──
    - 도시 객체(city)를 props로 전달받아 표시
    - 카드 클릭 → select-card 이벤트, 상세보기 클릭 → click-detail 이벤트를 부모에게 전달
-   - alert 같은 실제 동작은 부모(WeatherParent)가 담당한다 */
+   - alert 같은 실제 동작은 부모(WeatherParent)가 담당한다 (자식은 순수 표시 + 알림만 담당)
+   props/emits만 사용하는 기본형 버전이다. Pinia 스토어로 온도 단위(섭씨/화씨)를
+   변환해 보여주는 버전은 src/components/exercise/WeatherCardStore.vue 참고. */
+// city: 표시할 도시 데이터(이름/상태/기온). isSelected: 현재 선택된 카드인지 여부(강조 테두리용)
 defineProps({
   city: { type: Object, required: true },
   isSelected: { type: Boolean, default: false },
 })
 
+// select-card: 카드 클릭 시 선택 도시를 알림 / click-detail: 상세보기 버튼 클릭을 알림
 const emit = defineEmits(['select-card', 'click-detail'])
 </script>
 

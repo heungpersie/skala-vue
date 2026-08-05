@@ -1,4 +1,11 @@
 <script setup>
+// ─────────────────────────────────────────────────────────────
+// [SignUpView] /signup 라우트에서 사용하는 회원가입 화면입니다.
+// - el-form의 rules로 이름/이메일/비밀번호/비밀번호 확인을 검증하고,
+//   authApi.register()로 회원가입 API를 호출합니다(Pinia 스토어를 거치지 않는 단발성 요청).
+// - 가입 성공 시에는 자동 로그인시키지 않고, 방금 입력한 이메일과 함께
+//   /login으로 이동시켜 사용자가 직접 로그인하도록 유도합니다(LoginView의 justRegistered 배너 참고).
+// ─────────────────────────────────────────────────────────────
 import { reactive, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -8,10 +15,14 @@ import { authApi } from '@/api/authApi.js'
 
 const router = useRouter()
 
+// el-form 인스턴스를 참조해 validate()를 수동 호출하기 위한 템플릿 ref입니다.
 const formRef = ref()
+// API 호출 중 버튼을 비활성화/로딩 표시하기 위한 상태입니다.
 const isSubmitting = ref(false)
+// 서버에서 반환된 에러 메시지를 화면에 보여주기 위한 상태입니다.
 const errorMessage = ref('')
 
+// reactive로 폼 전체를 하나의 객체로 묶어 v-model / el-form :model에 바인딩합니다.
 const form = reactive({
   name: '',
   email: '',
@@ -19,6 +30,7 @@ const form = reactive({
   confirmPassword: '',
 })
 
+// el-form :rules에 전달되는 필드별 유효성 검사 규칙입니다.
 const rules = {
   name: [{ required: true, message: '이름을 입력해주세요.', trigger: 'blur' }],
   email: [
@@ -29,6 +41,8 @@ const rules = {
     { required: true, message: '비밀번호를 입력해주세요.', trigger: 'blur' },
     { min: 4, message: '비밀번호는 4자 이상이어야 합니다.', trigger: 'blur' },
   ],
+  // confirmPassword는 단순 required뿐 아니라, 커스텀 validator로 password 필드와
+  // 값이 같은지도 함께 검사합니다. callback(new Error(...))을 호출하면 검증 실패로 처리됩니다.
   confirmPassword: [
     { required: true, message: '비밀번호를 한 번 더 입력해주세요.', trigger: 'blur' },
     {
@@ -44,6 +58,10 @@ const rules = {
   ],
 }
 
+// 회원가입 폼 제출 핸들러입니다.
+// 1) el-form validate()로 클라이언트 측 검증을 먼저 통과시키고
+// 2) authApi.register()로 서버에 가입 요청을 보낸 뒤
+// 3) 성공하면 로그인 화면으로 이동, 실패하면 서버 에러 메시지를 그대로 노출합니다.
 async function submitSignUp() {
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) return
@@ -59,11 +77,14 @@ async function submitSignUp() {
     })
 
     ElMessage.success('회원가입이 완료되었습니다. 로그인해주세요.')
+    // registered=1과 email 쿼리를 함께 넘겨, LoginView가 완료 배너를 띄우고
+    // 이메일 입력칸을 미리 채워주도록 합니다.
     await router.push({
       name: 'login',
       query: { registered: '1', email: form.email.trim() },
     })
   } catch (error) {
+    // 예: 이미 가입된 이메일 등 서버 측 검증 실패 메시지를 그대로 사용자에게 보여줍니다.
     errorMessage.value = error.message
   } finally {
     isSubmitting.value = false

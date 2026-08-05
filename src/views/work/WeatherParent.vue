@@ -1,7 +1,9 @@
 <script setup>
 /* ── [과제3-1] WeatherParent.vue ──
    모든 반응형 데이터와 로직(watch / computed / 이벤트 처리)을 이 곳에서 유지한다.
-   자식은 표시(props)와 알림(emits)만 담당한다. */
+   자식은 표시(props)와 알림(emits)만 담당한다("똑똑한 부모 + 멍청한 자식" 패턴).
+   WeatherComposition.vue와 기능은 동일하지만, 여기서는 화면을 BaseDashboardCard /
+   SearchBar / WeatherCard / WeatherMap 네 개의 자식 컴포넌트로 분리해 재사용성을 높였다. */
 import { ref, computed, watch, watchEffect, onMounted } from 'vue'
 import BaseDashboardCard from './BaseDashboardCard.vue'
 import SearchBar from './SearchBar.vue'

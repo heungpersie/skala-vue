@@ -1,5 +1,8 @@
 <script setup>
-/* ── [Store 실습 / 과제5] WeatherStoreAboutView.vue ── 서비스 소개용 정적 페이지 */
+/* ── [Store 실습 / 과제5] WeatherStoreAboutView.vue ──
+   route: '/weather-store/about'. WeatherAboutView.vue(과제4)와 같은 역할의 소개 페이지를,
+   Pinia store + Axios 버전 대시보드(WeatherStoreHomeView.vue) 쪽 안내 문구로 다시 작성한 것.
+   정적 텍스트/링크만 있어 반응형 상태나 API 호출이 없으므로 <script setup>에 로직이 없다. */
 </script>
 
 <template>

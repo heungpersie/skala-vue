@@ -1,8 +1,10 @@
 <script setup>
 /* ── [Router 실습 / 과제4] WeatherHomeView.vue ──
-   WeatherParent.vue를 참고하여 작성한 메인 날씨 대시보드.
+   route: '/weather-router'. WeatherParent.vue를 참고하여 작성한 메인 날씨 대시보드.
    Open-Meteo 실시간 API + 지도 연동은 work/Weather* 과제와 동일한 방식을 사용하고,
-   여기서는 목록에 없는 도시를 검색해 직접 추가하는 기능까지 더한다. */
+   여기서는 목록에 없는 도시를 검색해 직접 추가하는 기능까지 더한다.
+   이 뷰는 Pinia store 없이 컴포저블(useWeatherCities)만으로 상태를 관리하는 버전이다 —
+   온도 단위(섭씨/화씨) 설정을 Pinia configStore로 전역 관리하는 버전은 WeatherStoreHomeView.vue 참고. */
 import { ref, computed, watch, watchEffect, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseDashboardCard from '@/components/exercise/BaseDashboardCard.vue'
@@ -88,10 +90,15 @@ const statusMessage = computed(() =>
     : '카드를 클릭하거나 검색해 보세요.',
 )
 
+// watch: 감시 대상(statusMessage)을 명시적으로 지정해, 값이 바뀔 때만 콜백을 실행한다.
+// 콜백에서 변경 전/후 값을 모두 받을 수 있는 것이 watchEffect와의 가장 큰 차이다.
 watch(statusMessage, (newMsg, oldMsg) => {
   console.log(`👁 [watch 감지] 상태 바 문구가 업데이트되었습니다 -> "${newMsg}" (이전: "${oldMsg}")`)
 })
 
+// watchEffect: 감시 대상을 따로 지정하지 않고, 콜백 내부에서 "참조하는" 모든 반응형 값
+// (여기서는 searchQuery, filteredWeatherList)을 자동으로 추적한다. 등록 시점에 즉시 1회
+// 실행되고, 이후 추적된 값이 바뀔 때마다 다시 실행된다.
 watchEffect(() => {
   console.log(
     `🤖 [watchEffect 자동 호출] 현재 검색어 '${searchQuery.value}'에 매칭되는 데이터를 필터링합니다. (${filteredWeatherList.value.length}건)`,

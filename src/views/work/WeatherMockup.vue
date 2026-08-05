@@ -1,4 +1,9 @@
 <script setup>
+/* ── [과제1] WeatherMockup.vue ──
+   날씨 대시보드의 가장 첫 버전(Mockup). 컴포넌트 분리 없이 검색/필터/정렬/지도를
+   한 파일 안에서 모두 구현한다. WeatherComposition.vue / WeatherParent.vue의 원형이며,
+   여기서만 검색어 입력에 디바운스(debounce)를 적용해 API 요청/필터 연산 낭비를 줄이는
+   패턴을 보여준다. */
 import { ref, computed, watch, onMounted } from 'vue'
 import { WEATHER_CITIES } from '@/data/weatherCities'
 import { fetchWeatherForCities } from '@/composables/useWeatherApi'
@@ -9,10 +14,15 @@ const weatherList = ref([])
 const apiError = ref(false)
 
 // ---------- 검색 (디바운스) ----------
+// 디바운스: 사용자가 계속 타이핑하는 동안은 실제 필터링을 미루고,
+// 입력이 300ms 이상 멈췄을 때만 debouncedQuery를 갱신해 불필요한 재계산을 줄인다.
 const searchQuery = ref('') // 입력창에 즉시 반영되는 값
 const debouncedQuery = ref('') // 실제 필터링에 사용되는 값 (300ms 지연)
-let debounceTimer = null
+let debounceTimer = null // setTimeout의 타이머 id를 담아두는 변수(반응형 아님)
 
+// searchQuery가 바뀔 때마다: 이전 타이머를 취소하고 새 타이머를 다시 건다.
+// 타이핑이 멈추지 않으면 setTimeout 콜백이 계속 취소되므로, 마지막 입력 후
+// 300ms가 지나야 비로소 debouncedQuery.value가 갱신된다.
 watch(searchQuery, (newVal) => {
   clearTimeout(debounceTimer)
   debounceTimer = setTimeout(() => {
@@ -81,6 +91,8 @@ const sortedList = computed(() => {
 })
 
 // 평균 기온 (필터링된 리스트 기준, API 조회 실패 도시는 제외)
+// computed 체이닝: knownTempList도 computed이고, averageTemp가 그 결과를 다시 사용한다.
+// 이렇게 작은 단위로 computed를 나누면 각 단계가 캐시되어 중복 계산을 피할 수 있다.
 const knownTempList = computed(() => filteredList.value.filter((c) => c.temp !== null))
 
 const averageTemp = computed(() => {
@@ -90,6 +102,7 @@ const averageTemp = computed(() => {
 })
 
 // 최고 / 최저 기온 도시 (필터링된 리스트 기준, 동률이면 첫 번째)
+// reduce로 배열 전체를 순회하며 현재까지의 최고/최저값을 누적 비교한다
 const maxTempCity = computed(() => {
   if (knownTempList.value.length === 0) return null
   return knownTempList.value.reduce((a, b) => (b.temp > a.temp ? b : a))

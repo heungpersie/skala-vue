@@ -1,17 +1,24 @@
 <script setup>
 /* ── [과제5 / Store 실습] WeatherCardStore.vue ──
    WeatherCard.vue를 기반으로, configStore(Pinia)의 단위 설정에 따라
-   기온 표시를 섭씨/화씨로 변환해서 보여준다. 등급은 배지 대신 카드 배경/좌측 색상으로 표현한다. */
+   기온 표시를 섭씨/화씨로 변환해서 보여준다. 등급은 배지 대신 카드 배경/좌측 색상으로 표현한다.
+   props/emits만 쓰는 기본형(src/components/exercise/WeatherCard.vue)과 달리,
+   이 컴포넌트는 useConfigStore()로 전역 상태(단위 설정)를 직접 구독한다 —
+   부모가 단위 값을 props로 내려줄 필요 없이, 스토어를 쓰는 모든 컴포넌트가
+   자동으로 같은 단위 설정을 공유하는 것이 Pinia 스토어 패턴의 핵심이다. */
 import { computed } from 'vue'
 import { useConfigStore } from '@/stores/configStore'
 
+// city: 표시할 도시 데이터(원본 기온은 항상 섭씨로 들어온다). isSelected: 선택 강조 여부
 const props = defineProps({
   city: { type: Object, required: true },
   isSelected: { type: Boolean, default: false },
 })
 
+// select-card / click-detail / remove: WeatherCard.vue와 동일한 의미의 이벤트
 const emit = defineEmits(['select-card', 'click-detail', 'remove'])
 
+// 컴포넌트마다 새로 만들지 않고, 앱 전역에서 하나로 공유되는 스토어 인스턴스를 가져온다
 const configStore = useConfigStore()
 
 const displayTemp = computed(() => {

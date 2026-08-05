@@ -1,5 +1,9 @@
 <script setup>
-/* ── [Router 실습] WeatherAboutView.vue ── 서비스 소개용 정적 페이지 */
+/* ── [Router 실습 / 과제4] WeatherAboutView.vue ──
+   route: '/weather-router/about'. WeatherHomeView(메인 대시보드)에서 지연 로딩(lazy loading)되는
+   서비스 소개용 정적 페이지. 반응형 상태나 API 호출 없이 순수하게 텍스트/링크만 보여주므로
+   <script setup> 안에 별도 로직이 없다 — 컴포넌트 이름을 부여하기 위해서만 존재한다.
+   Pinia configStore가 적용된 버전은 WeatherStoreAboutView.vue 참고. */
 </script>
 
 <template>

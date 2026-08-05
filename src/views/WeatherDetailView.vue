@@ -1,10 +1,12 @@
 <script setup>
 /* ── [Router 실습 / 과제4] WeatherDetailView.vue ──
-   Router 동적 경로 매칭(/weather/:cityId)으로 전달받은 cityId를 기반으로
+   route: '/weather/:cityId'. Router 동적 경로 매칭(:cityId)으로 전달받은 cityId를 기반으로
    Mount 시점에 공유 도시 목록(useWeatherCities, Open-Meteo 실시간 데이터)에서
    도시 객체를 선택해 상세 기상관측 정보를 보여준다.
    Home을 거치지 않고 이 주소로 직접 들어와도 동작하도록 loadCities()를 다시 호출한다
-   (이미 로드되어 있으면 아무 일도 하지 않는다). */
+   (이미 로드되어 있으면 아무 일도 하지 않는다).
+   이 뷰는 Pinia store 없이 컴포저블(useWeatherCities)만으로 상태를 관리하는 버전이다 —
+   온도 단위(섭씨/화씨) 변환과 Pinia configStore가 추가된 버전은 WeatherStoreDetailView.vue 참고. */
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useWeatherCities } from '@/composables/useWeatherCities'
@@ -12,11 +14,18 @@ import { useWeatherCities } from '@/composables/useWeatherCities'
 const route = useRoute()
 const router = useRouter()
 
+// useWeatherCities()는 싱글턴 컴포저블 — Home 화면과 이 화면이 같은 반응형 상태(cities 등)를
+// 공유한다. 그래서 Home에서 이미 불러온 목록이 있으면 다시 API를 부르지 않고 즉시 재사용된다.
 const { cities, loading, loaded, error: apiError, loadCities } = useWeatherCities()
 
+// onMounted: 컴포넌트가 DOM에 처음 마운트된 직후 한 번 실행되는 라이프사이클 훅.
+// 이 주소(/weather/:cityId)로 바로 진입한 경우를 대비해 여기서도 도시 목록 로드를 보장한다.
 onMounted(loadCities)
 
+// route.params.cityId: URL의 동적 세그먼트(:cityId) 값을 useRoute()로 읽어와, 이미 불러온
+// cities 배열에서 일치하는 도시 객체를 찾는다. computed이므로 cities나 params가 바뀌면 자동 재계산된다.
 const city = computed(() => cities.value.find((c) => c.id === route.params.cityId) ?? null)
+// 목록 로드가 끝났는데도(loaded && !loading) 일치하는 도시를 못 찾았다면 "존재하지 않는 cityId"로 판단한다.
 const notFound = computed(() => loaded.value && !loading.value && !city.value)
 
 const goHome = () => {

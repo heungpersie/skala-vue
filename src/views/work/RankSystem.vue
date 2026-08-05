@@ -1,23 +1,40 @@
 <script setup>
+// ─────────────────────────────────────────────────────────────
+// [RankSystem] /RankSystem 라우트의 "까치 극장" 영화 기록 화면입니다.
+// - 영화진흥위원회(KOBIS) 영화 검색 Open API를 axios로 호출해 제목 자동완성을 구현합니다.
+//   인증은 발급받은 API 키(VITE_KOBIS_API_KEY 환경변수)를 쿼리 파라미터로 전달하는 방식입니다.
+// - el-autocomplete에서 영화를 선택하면 제목/제작년도/장르/개봉일/감독 정보를 폼에 채워 넣고,
+//   사용자가 직접 관람일자와 별점을 입력해 "저장하기"를 누르면 movies 배열(로컬 상태)에 기록됩니다.
+// - 별도의 랭킹 API 호출 없이, 사용자가 매긴 별점(rate) 순으로 정렬하는 로직은 없고
+//   등록한 순서 그대로 목록에 쌓이는 단순 CRUD(등록/삭제) 형태입니다.
+// ─────────────────────────────────────────────────────────────
 import { ref } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { Search, Loading } from '@element-plus/icons-vue'
 
+// Vite 환경변수(.env의 VITE_ 접두사)로 주입되는 KOBIS API 키입니다. 없으면 빈 문자열로 두고
+// fetchSuggestions에서 별도 경고를 띄웁니다.
 const API_KEY = import.meta.env.VITE_KOBIS_API_KEY || ''
 
+// 자동완성 입력창에 바인딩되는 검색어와, KOBIS에서 받아온 검색 결과 목록입니다.
 const searchKeyword = ref('')
 const movieResults = ref([])
+// 자동완성에서 실제로 선택한 영화(원본 응답 객체)를 보관합니다.
 const selectedMovie = ref(null)
 const isSearching = ref(false)
 
+// 선택된 영화 정보를 폼 입력칸에 그대로 채워 보여주기 위한 개별 ref들입니다.
+// (readonly 입력창이라 사용자가 직접 수정하지 않고 selectMovie()에서만 값을 채웁니다.)
 const movieTitle = ref('')
 const movieYear = ref('')
 const movieGenre = ref('')
 const movieOpenDate = ref('')
 const movieDirector = ref('')
+// 아래 두 값은 사용자가 직접 입력하는 항목입니다(관람일자, 별점).
 const watchDate = ref('')
 const productRate = ref(0)
+// 지금까지 저장한 "영화 기록" 목록입니다. 서버 저장 없이 컴포넌트 메모리에만 유지됩니다.
 const movies = ref([])
 
 /* KOBIS 응답의 directors 배열(예: [{ peopleNm: '봉준호' }])을 "봉준호" 형태 문자열로 변환 */
@@ -26,6 +43,7 @@ const getDirectorNames = (movie) => {
   return directors.map((director) => director.peopleNm).filter(Boolean).join(', ')
 }
 
+// 저장 완료 후 또는 초기화 시 선택된 영화와 입력 폼을 모두 비우는 헬퍼입니다.
 const resetSelectedMovie = () => {
   selectedMovie.value = null
   movieTitle.value = ''
@@ -38,6 +56,8 @@ const resetSelectedMovie = () => {
 }
 
 /* el-autocomplete가 입력할 때마다(디바운스 300ms) 호출하는 자동완성 콜백 */
+// queryString: 사용자가 입력 중인 텍스트, callback: el-autocomplete에 결과 배열을 넘겨주는 함수.
+// KOBIS 영화 검색 API를 호출해 movieNm(영화명)이 유사한 목록을 받아온 뒤 callback으로 전달합니다.
 const fetchSuggestions = async (queryString, callback) => {
   const normalized = queryString.trim()
 
@@ -60,6 +80,7 @@ const fetchSuggestions = async (queryString, callback) => {
     const response = await axios.get(
       'https://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieList.json',
       {
+        // KOBIS는 헤더 인증이 아니라 쿼리 파라미터(key)로 API 키를 전달하는 방식입니다.
         params: {
           key: API_KEY,
           movieNm: normalized,
@@ -68,10 +89,13 @@ const fetchSuggestions = async (queryString, callback) => {
       },
     )
 
+    // 옵셔널 체이닝(?.)과 ?? []로, 응답 구조가 예상과 다르거나 결과가 없을 때도
+    // 항상 배열을 보장해 이후 로직(.map, .length 등)이 에러 없이 동작하게 합니다.
     const list = response?.data?.movieListResult?.movieList ?? []
     movieResults.value = list
     callback(list)
   } catch (error) {
+    // API 호출 실패 시에도 자동완성 목록을 비우고 사용자에게 안내만 띄웁니다.
     console.error(error)
     movieResults.value = []
     callback([])
@@ -81,6 +105,8 @@ const fetchSuggestions = async (queryString, callback) => {
   }
 }
 
+// 자동완성 목록에서 영화를 클릭(선택)했을 때 호출됩니다.
+// 선택된 영화의 필드를 구조분해해 폼 입력칸에 채우고, 관람일자/별점은 새로 입력하도록 초기화합니다.
 const selectMovie = (movie) => {
   const { movieNm, prdtYear, genreAlt, openDt } = movie
 
@@ -97,6 +123,8 @@ const selectMovie = (movie) => {
   ElMessage.success(`${movieNm} 선택 완료`)
 }
 
+// "저장하기" 버튼 핸들러입니다. Element Plus의 el-form rules 대신 수동으로
+// 조건을 하나씩 검사하는 방식의 유효성 검사 예시입니다(영화 선택 → 관람일 → 별점 → 중복 확인 순).
 const handleSave = () => {
   if (!selectedMovie.value || !movieTitle.value) {
     ElMessage.warning('영화를 선택해주세요!')
@@ -113,12 +141,15 @@ const handleSave = () => {
     return
   }
 
+  // 같은 제목의 영화가 이미 목록에 있으면 중복 저장을 막습니다.
   const isDuplicate = movies.value.map((movie) => movie.title).includes(movieTitle.value)
   if (isDuplicate) {
     ElMessage.warning('이미 등록된 영화입니다!')
     return
   }
 
+  // 기존 배열을 직접 push하지 않고 스프레드로 새 배열을 만들어 대입합니다.
+  // (불변성을 지키는 습관으로, Vue 반응형 갱신을 더 명확하게 트리거합니다.)
   movies.value = [
     ...movies.value,
     {
@@ -137,6 +168,7 @@ const handleSave = () => {
   resetSelectedMovie()
 }
 
+// 저장된 영화 카드의 "삭제" 버튼에서 호출되어 해당 id만 제외한 새 배열로 교체합니다.
 const handleDelete = (id) => {
   movies.value = movies.value.filter((movie) => movie.id !== id)
   ElMessage.success('삭제되었습니다!')

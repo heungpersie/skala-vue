@@ -1,8 +1,10 @@
 <script setup>
 /* ── [Store 실습 / 과제5] WeatherStoreDetailView.vue ──
-   WeatherDetailView.vue(과제4)를 기반으로, Pinia configStore의 단위 설정에 따라
-   기온/체감온도 표시를 섭씨/화씨로 변환한다. 도시 목록은 과제4(Open-Meteo)와 분리된
-   useOpenWeatherCities(Axios + OpenWeatherMap) 싱글턴을 공유한다. */
+   route: '/weather-store/:cityId'. WeatherDetailView.vue(과제4)를 기반으로, Pinia configStore의
+   단위 설정에 따라 기온/체감온도 표시를 섭씨/화씨로 변환한다. 도시 목록은 과제4(Open-Meteo)와
+   분리된 useOpenWeatherCities(Axios + OpenWeatherMap) 싱글턴을 공유한다.
+   이 뷰는 Pinia store(configStore)를 사용하는 버전이다 — store 없이 컴포저블만으로 구현한
+   버전은 WeatherDetailView.vue 참고. */
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useOpenWeatherCities } from '@/composables/useOpenWeatherCities'
@@ -12,12 +14,17 @@ import MagpieNest from '@/components/exercise/MagpieNest.vue'
 
 const route = useRoute()
 const router = useRouter()
+// Pinia store 인스턴스. configStore.js는 defineStore(setup 스타일)로 unit(섭씨/화씨),
+// unitSymbol(°C·°F), toggleUnit()을 정의해두었고, 어느 컴포넌트에서 호출하든 같은 상태를 공유한다.
+// useWeatherCities 같은 컴포저블과 달리, Pinia 스토어는 devtools 연동/전역 단일 상태 보장 등을
+// 프레임워크 차원에서 지원한다는 점이 다르다.
 const configStore = useConfigStore()
 
 const { cities, loading, loaded, error: apiError, loadCities } = useOpenWeatherCities()
 
 onMounted(loadCities)
 
+// route.params.cityId(동적 경로 세그먼트)로 도시 목록에서 대상 도시를 찾는다.
 const city = computed(() => cities.value.find((c) => c.id === route.params.cityId) ?? null)
 const notFound = computed(() => loaded.value && !loading.value && !city.value)
 
@@ -26,6 +33,9 @@ const airQuality = ref(null)
 const airLoading = ref(false)
 const airError = ref(false)
 
+// watch(city, ..., { immediate: true }): city 값이 바뀔 때마다(도시가 바뀌거나 처음 정해질 때)
+// 콜백을 실행한다. { immediate: true } 옵션 덕분에 최초 실행 시점(city가 아직 null이어도)에도
+// 한 번 콜백이 실행되어, computed와 달리 비동기 API 호출 같은 부수효과(side effect)를 안전하게 넣을 수 있다.
 watch(
   city,
   async (target) => {

@@ -1,3 +1,5 @@
+// 앱의 진입점(entry point). Vue 앱 인스턴스를 생성하고 Pinia/Router/Element Plus 같은
+// 플러그인을 등록한 뒤 #app에 마운트한다. index.html의 <script type="module" src="/src/main.js">에서 로드된다.
 import './assets/main.css'
 
 import { createApp } from 'vue'
@@ -20,8 +22,10 @@ darkMediaQuery.addEventListener('change', (event) => syncElementPlusTheme(event.
 
 const app = createApp(App)
 
+// app.use()로 전역 플러그인을 등록한다: Pinia(상태 관리), Router(라우팅), Element Plus(UI 컴포넌트).
 app.use(createPinia())
 app.use(router)
 app.use(ElementPlus)
 
+// 실제 DOM에 마운트되어야 비로소 화면에 렌더링이 시작된다.
 app.mount('#app')

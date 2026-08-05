@@ -1,11 +1,19 @@
 <script setup>
+/* ── HomeView.vue ── 앱의 첫 진입 화면(route: '/').
+   로그인 여부(Pinia authStore.isLoggedIn)에 따라 히어로 영역의 문구와 버튼
+   (로그인/회원가입 vs 환영 인사+마이페이지 이동)을 다르게 렌더링하는 랜딩 페이지. */
 import { computed } from 'vue'
 
 import { useAuthStore } from '@/stores/auth.js'
 import magpieHero from '@/assets/magpie-hero.png'
 
+// Pinia 스토어(useAuthStore)를 호출해 전역 인증 상태(로그인 여부, 사용자 정보)를 가져온다.
+// 컴포넌트 밖(stores/auth.js)에 정의된 상태를 여러 컴포넌트가 공유해서 쓸 수 있는 것이 스토어의 핵심이다.
 const authStore = useAuthStore()
 
+// computed: 의존하는 반응형 값(authStore.isLoggedIn, authStore.user)이 바뀔 때만 자동으로
+// 다시 계산되는 파생 상태(derived state). 템플릿에서는 일반 변수처럼 {{ greeting }}으로 쓴다.
+// 로그인 상태가 아니면 null을 반환해 v-if 등에서 "표시 여부" 판단에도 그대로 쓸 수 있다.
 const greeting = computed(() =>
   authStore.isLoggedIn ? `${authStore.user?.name ?? '회원'}님, 오늘도 화이팅이에요!` : null,
 )

@@ -2,12 +2,16 @@
 /* ── [Router 실습] WeatherCard.vue ──
    - 도시 객체(city)를 props로 전달받아 표시
    - 카드 클릭 → select-card 이벤트, 상세보기 클릭 → click-detail 이벤트를 부모에게 전달
-   - 실제 라우터 이동(router.push)은 부모(WeatherHomeView)가 담당한다 */
+   - 실제 라우터 이동(router.push)은 부모(WeatherHomeView)가 담당한다
+   props/emits 기반의 기본형 버전이다. 같은 카드를 Pinia 스토어(configStore)로
+   온도 단위를 변환해 보여주는 버전은 src/components/exercise/WeatherCardStore.vue 참고. */
+// city: 표시할 도시 데이터. isSelected: 현재 선택된 카드인지 여부(강조 테두리용)
 defineProps({
   city: { type: Object, required: true },
   isSelected: { type: Boolean, default: false },
 })
 
+// select-card: 카드 클릭 시 선택 알림 / click-detail: 상세보기 클릭 알림 / remove: 목록에서 삭제 요청
 const emit = defineEmits(['select-card', 'click-detail', 'remove'])
 </script>
 

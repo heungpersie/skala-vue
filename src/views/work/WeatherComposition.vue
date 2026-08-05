@@ -1,4 +1,10 @@
 <script setup>
+/* ── WeatherComposition.vue ──
+   WeatherParent.vue와 같은 기능(검색/필터/정렬/지도)을 제공하지만,
+   화면을 자식 컴포넌트로 쪼개지 않고 이 파일 하나(template)에 그대로 작성한 버전이다.
+   즉 "컴포넌트 분리 전" 형태 — 지도(WeatherMap)만 별도 컴포넌트로 빼고
+   검색창/카드 목록 등은 모두 이 파일의 <template> 안에 인라인으로 존재한다.
+   상태 관리 로직(ref/computed/watch)은 WeatherParent.vue와 동일한 패턴을 사용한다. */
 import { ref, computed, watch, watchEffect, onMounted } from 'vue'
 import { WEATHER_CITIES } from '@/data/weatherCities'
 import { fetchWeatherForCities } from '@/composables/useWeatherApi'
@@ -17,10 +23,14 @@ const statusOptions = computed(() => ['전체', ...new Set(weatherList.value.map
 
 const sortOrder = ref('default')
 
+// 데이터가 아직 도착하지 않은 동안 el-skeleton을 보여주기 위한 로딩 플래그
 const loading = ref(true)
+// onMounted: 컴포넌트가 화면(DOM)에 실제로 붙은 뒤 1회 실행되는 생명주기 훅.
+// 여기서 비동기 API 호출을 시작해 weatherList를 채운다.
 onMounted(async () => {
   try {
     weatherList.value = await fetchWeatherForCities(WEATHER_CITIES)
+    // 모든 도시가 error 플래그를 가지고 있으면(=전부 실패) 전역 에러 배너를 띄운다
     apiError.value = weatherList.value.every((c) => c.error)
   } catch {
     apiError.value = true
@@ -29,7 +39,9 @@ onMounted(async () => {
   }
 })
 
-/* ── [과제2-2] 검색 도시 (computed 활용) ── */
+/* ── [과제2-2] 검색 도시 (computed 활용) ──
+   computed는 의존하는 ref(weatherList/searchQuery/activeStatus)가 바뀔 때만
+   자동으로 다시 계산되고, 그 외에는 캐시된 값을 재사용한다(메서드 호출과의 차이점). */
 const filteredWeatherList = computed(() => {
   let list = weatherList.value
 
@@ -72,13 +84,16 @@ const statusMessage = computed(() =>
 )
 
 /* ── [과제2-3-1] selectedCityInfo 감시 (watch) ──
-   상태 바 문구가 바뀔 때마다 콘솔로그 작성 */
+   watch는 "감시 대상(statusMessage)"을 명시적으로 지정하고, 값이 바뀌기 전(oldMsg)과
+   후(newMsg)를 함께 받을 수 있다. 상태 바 문구가 바뀔 때마다 콘솔로그를 남긴다. */
 watch(statusMessage, (newMsg, oldMsg) => {
   console.log(`👁 [watch 감지] 상태 바 문구가 업데이트되었습니다 -> "${newMsg}" (이전: "${oldMsg}")`)
 })
 
 /* ── [과제2-3-2] searchQuery 감시 (watchEffect) ──
-   타이핑할 때마다 변하는 searchQuery를 추적 */
+   watchEffect는 감시 대상을 따로 적지 않고, 콜백 안에서 "읽은" 반응형 값(searchQuery,
+   filteredWeatherList)을 자동으로 추적해 그중 하나라도 바뀌면 즉시 재실행된다.
+   또한 컴포넌트가 마운트될 때 최초 1회도 즉시 실행된다(watch와 달리 immediate 옵션 불필요). */
 watchEffect(() => {
   console.log(
     `🤖 [watchEffect 자동 호출] 현재 검색어 '${searchQuery.value}'에 매칭되는 API 데이터를 필터링합니다. (${filteredWeatherList.value.length}건)`,

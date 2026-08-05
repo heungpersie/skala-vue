@@ -5,12 +5,15 @@
 import { computed } from 'vue'
 
 const props = defineProps({
-  city: { type: Object, default: null },
-  size: { type: String, default: 'normal' }, // 'normal' | 'large'
+  city: { type: Object, default: null }, // 현재 표시할 도시의 날씨 데이터(부모가 선택/조회한 결과)
+  size: { type: String, default: 'normal' }, // 'normal' | 'large' — 카드 크기(작은 미리보기 vs 큰 패널)
   floating: { type: Boolean, default: false }, // 화면에 고정되어 스크롤을 따라 움직인다
   dustGrade: { type: String, default: null }, // '좋음' | '보통' | '나쁨' | '매우나쁨'
 })
 
+// city(날씨)로부터 "까치가 어떤 상태로 보여야 하는지"를 계산해내는 파생 상태(computed).
+// city가 바뀌면 자동으로 재계산되어 아래 template의 :data-state에 반영되고,
+// CSS의 [data-state='...'] 선택자가 그에 맞는 애니메이션(콩콩 뛰기/떨기 등)을 적용한다.
 const weatherState = computed(() => {
   const city = props.city
   if (!city || city.temp === null || city.temp === undefined) return 'empty'

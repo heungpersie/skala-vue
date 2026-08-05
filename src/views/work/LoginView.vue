@@ -1,4 +1,12 @@
 <script setup>
+// ─────────────────────────────────────────────────────────────
+// [LoginView] /login, /Login 라우트에서 사용하는 로그인 화면입니다.
+// - Element Plus <el-form>의 rules 기반 유효성 검사로 이메일/비밀번호를 검증하고,
+//   Pinia auth 스토어(useAuthStore)의 login() 액션으로 실제 로그인 요청을 보냅니다.
+// - 로그인 성공 시 router.beforeEach 가드(src/router/index.js)가 붙여준
+//   redirect 쿼리 파라미터를 읽어 원래 가려던 보호 페이지로 되돌아갑니다.
+// - 무차별 대입(brute-force) 공격을 흉내 낸 연속 실패 잠금 UX도 함께 구현합니다.
+// ─────────────────────────────────────────────────────────────
 import { computed, onBeforeUnmount, reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -7,12 +15,18 @@ import { Lock, Message } from '@element-plus/icons-vue'
 import { isRememberMeEnabled } from '@/api/tokenStorage.js'
 import { useAuthStore } from '@/stores/auth.js'
 
+// Pinia 스토어 인스턴스. 로그인 액션(login)과 로딩/에러 상태(isLoading, errorMessage)를
+// 컴포넌트에서 직접 참조해 사용합니다.
 const authStore = useAuthStore()
+// 현재 라우트 정보(쿼리스트링 등)를 읽기 위한 useRoute, 로그인 후 이동을 위한 useRouter.
 const route = useRoute()
 const router = useRouter()
 
+// el-form 컴포넌트 자체를 참조해 validate()를 수동으로 호출하기 위한 템플릿 ref.
 const formRef = ref()
 
+// reactive는 객체 전체를 반응형으로 감싸는 API로, 여러 필드를 하나의 폼 모델로 묶어
+// v-model과 el-form의 :model에 그대로 바인딩하기 좋습니다.
 const credentials = reactive({
   email: '',
   password: '',
@@ -23,11 +37,15 @@ if (typeof route.query.email === 'string') {
   credentials.email = route.query.email
 }
 
+// 회원가입 화면에서 registered=1 쿼리와 함께 넘어왔는지 여부 (안내 배너 표시용).
 const justRegistered = route.query.registered === '1'
+// "로그인 상태 유지" 체크박스의 초기값을 localStorage에 저장된 이전 설정에서 불러옵니다.
 const rememberMe = ref(isRememberMeEnabled())
 
+// 일반 로그인 폼 / 테스트 계정(mock) 로그인 중 어떤 탭이 활성화됐는지 나타내는 상태.
 const loginMode = ref('normal')
 
+// 별도 회원가입 없이 바로 체험할 수 있도록 미리 준비해둔 테스트 계정 목록입니다.
 const mockAccounts = [
   {
     email: 'student@skala.com',
@@ -43,6 +61,9 @@ const mockAccounts = [
   },
 ]
 
+// el-form의 :rules prop에 전달되는 Element Plus 유효성 검사 규칙입니다.
+// required/trigger 조합으로 "언제(blur/change) 무엇을 검사할지"를 선언적으로 정의하며,
+// 실패 시 message가 폼 아래에 자동으로 표시됩니다.
 const rules = {
   email: [
     { required: true, message: '이메일을 입력해주세요.', trigger: 'blur' },
@@ -58,13 +79,19 @@ const rules = {
 const MAX_ATTEMPTS = 5
 const LOCKOUT_SECONDS = 20
 
+// 연속 로그인 실패 횟수와, 잠금이 걸렸을 때 남은 초를 담는 반응형 상태입니다.
 const failedAttempts = ref(0)
 const lockoutRemaining = ref(0)
+// setInterval의 타이머 id는 반응형일 필요가 없으므로 일반 변수로 둡니다.
 let lockoutTimer = null
 
+// computed: 다른 반응형 상태(lockoutRemaining, failedAttempts)로부터 파생되는 값이라
+// 별도의 ref로 관리하지 않고 자동으로 재계산되도록 합니다.
 const isLockedOut = computed(() => lockoutRemaining.value > 0)
 const attemptsLeft = computed(() => Math.max(MAX_ATTEMPTS - failedAttempts.value, 0))
 
+// 실패 횟수가 MAX_ATTEMPTS에 도달하면 호출되어 LOCKOUT_SECONDS 동안 로그인 버튼을 막습니다.
+// setInterval로 1초마다 남은 시간을 줄이고, 0이 되면 타이머를 정리하고 실패 횟수를 리셋합니다.
 function startLockout() {
   lockoutRemaining.value = LOCKOUT_SECONDS
 
@@ -79,10 +106,12 @@ function startLockout() {
   }, 1000)
 }
 
+// 컴포넌트가 사라지기 전에 진행 중인 setInterval을 정리해 메모리 누수/불필요한 콜백 실행을 막습니다.
 onBeforeUnmount(() => {
   if (lockoutTimer) clearInterval(lockoutTimer)
 })
 
+// 서버가 내려준 에러 메시지에 "남은 시도 n회" 안내를 덧붙여 보여주는 computed 값입니다.
 const loginErrorText = computed(() => {
   if (!authStore.errorMessage) return ''
   if (failedAttempts.value > 0 && attemptsLeft.value > 0) {
@@ -91,9 +120,13 @@ const loginErrorText = computed(() => {
   return authStore.errorMessage
 })
 
+// 일반 로그인 폼의 제출 핸들러입니다.
+// 1) 잠금 상태면 바로 종료 2) el-form의 validate()로 rules 검증
+// 3) 통과하면 Pinia authStore.login()으로 실제 로그인 요청을 보냅니다.
 async function submitLogin() {
   if (isLockedOut.value) return
 
+  // formRef.value.validate()는 실패 시 reject되는 Promise이므로 catch로 false 처리합니다.
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) return
 
@@ -108,25 +141,32 @@ async function submitLogin() {
     ElMessage.success('로그인되었습니다.')
 
     // 보호 페이지에서 로그인 화면으로 이동했다면 원래 목적지로 돌아갑니다.
+    // router/index.js의 beforeEach 가드가 requiresAuth 라우트 접근을 막을 때
+    // { name: 'login', query: { redirect: to.fullPath } } 형태로 넘겨준 값을 그대로 사용합니다.
     const redirect =
       typeof route.query.redirect === 'string'
         ? route.query.redirect
         : '/dashboard'
 
+    // push 대신 replace를 사용해 로그인 화면이 브라우저 히스토리에 남지 않도록 합니다.
     await router.replace(redirect)
     return
   }
 
+  // 로그인 실패 시 실패 횟수를 늘리고, 한도에 도달하면 잠금을 시작합니다.
   failedAttempts.value += 1
   if (failedAttempts.value >= MAX_ATTEMPTS) startLockout()
 }
 
+// "테스트 계정으로 체험" 탭에서 미리 정의된 mockAccounts 중 하나로 즉시 로그인합니다.
+// 폼 검증 없이 authStore.login()을 바로 호출한다는 점만 submitLogin과 다릅니다.
 async function loginWithMockAccount(account) {
   const succeeded = await authStore.login(account.email, account.password, rememberMe.value)
   if (!succeeded) return
 
   ElMessage.success(`${account.name} 계정으로 로그인되었습니다.`)
 
+  // 일반 로그인과 동일하게 redirect 쿼리가 있으면 원래 목적지로 이동합니다.
   const redirect =
     typeof route.query.redirect === 'string' ? route.query.redirect : '/dashboard'
 

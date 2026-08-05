@@ -1,3 +1,6 @@
+// [JWT 인증 실습] 로그인 상태(Access Token + 사용자 정보)를 앱 전역에서 공유하는 Pinia 스토어.
+// 로그인/로그아웃 처리와 storage(local/session) 동기화를 이 한 곳에서 관리해,
+// 컴포넌트들은 authStore.isLoggedIn / authStore.user만 보고 UI를 그리면 된다.
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
@@ -7,6 +10,8 @@ import { clearItem, readItem, setRememberMe, writeItem } from '@/api/tokenStorag
 
 const userStorageKey = 'jwt-lab-user'
 
+// storage에 저장된 사용자 정보를 초기 state로 복원한다. 값이 없거나(JSON.parse(null) 실패)
+// 손상된 경우에도 앱이 죽지 않도록 try/catch로 안전하게 null을 반환한다.
 function readStoredUser() {
   try {
     return JSON.parse(readItem(userStorageKey))
@@ -31,6 +36,8 @@ export const useAuthStore = defineStore('auth', () => {
       : '로그인이 필요합니다.',
   )
 
+  // 로그인 성공 시 state와 storage(local/session)를 함께 갱신하는 내부 헬퍼.
+  // state만 바꾸면 새로고침 시 로그인 정보가 사라지므로 반드시 storage에도 반영한다.
   function saveAuthentication(loginResponse) {
     accessToken.value = loginResponse.accessToken
     user.value = loginResponse.user
@@ -39,6 +46,7 @@ export const useAuthStore = defineStore('auth', () => {
     writeItem(userStorageKey, JSON.stringify(loginResponse.user))
   }
 
+  // 로그아웃/인증 실패 시 state와 storage를 모두 비우는 내부 헬퍼.
   function clearAuthentication() {
     accessToken.value = null
     user.value = null

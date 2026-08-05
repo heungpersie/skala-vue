@@ -1,9 +1,23 @@
 <script setup>
+/* ── MagpieHeungView.vue: "은혜 갚는 까치" 미니 스토리/게임 ──
+   흥부전 모티브의 인터랙티브 화면. 사용자가 붕대(색깔)를 선택해 다친 까치를 치료하면,
+   까치는 단계(phase)를 거쳐 날아갔다가 돌아와 선택한 색에 대응하는 시사 기사를 물어다 준다.
+   상태는 두 개의 ref로만 구성된다.
+     - selectedBandage: 사용자가 고른 붕대 색('yellow'|'blue'|'red'|'black'|null)
+     - phase: 이야기의 진행 단계('injured' → 'healing' → 'flying' → 'returned')
+   phase는 heal() 안의 setTimeout으로 시간차를 두고 자동 전환되며(간단한 타이머 기반
+   상태 머신), computed는 selectedBandage로부터 "보여줄 기사"와 "붕대 색상값"을 파생시킨다. */
 import { ref, computed } from 'vue'
 
+// 현재 선택된 붕대 색. null이면 아직 아무것도 선택하지 않은 초기 상태
 const selectedBandage = ref(null)
+// 스토리 진행 단계(4단계 상태 머신). 템플릿의 v-if들이 이 값에 따라
+// 까치 다리 모양(다침/치료됨), 대사(speech), 기사 카드 노출 여부를 결정한다.
+// injured(다침, 초기) → healing(치료 중) → flying(날아감) → returned(돌아와서 기사 전달)
 const phase = ref('injured') // injured → healing → flying → returned
 
+// 붕대 색깔별로 보여줄 시사 기사 데이터(카테고리/제목/요약/단어장).
+// selectedBandage 값과 이 객체의 key를 그대로 매칭해서 currentArticle을 계산한다.
 const articles = {
   yellow: {
     category: '경제 / 금융',
@@ -115,10 +129,14 @@ const articles = {
   },
 }
 
+// 선택된 붕대 색에 해당하는 기사를 반환한다. 아직 아무것도 선택하지 않았으면 null
+// (computed이므로 selectedBandage가 바뀔 때만 재계산되고, 그 외엔 캐시된 값을 반환)
 const currentArticle = computed(() =>
   selectedBandage.value ? articles[selectedBandage.value] : null,
 )
 
+// 선택된 붕대 색 이름을 실제 CSS 색상값(hex)으로 변환한다.
+// 템플릿에서 붕대 SVG/UI를 :style로 물들이는 데 사용된다.
 const bandageColor = computed(() => {
   switch (selectedBandage.value) {
     case 'yellow':
@@ -130,10 +148,14 @@ const bandageColor = computed(() => {
     case 'black':
       return '#333333'
     default:
-      return '#d9d9d9'
+      return '#d9d9d9' // 아직 선택 전(기본 회색)
   }
 })
 
+// 사용자가 붕대 버튼을 클릭했을 때 호출되는 "스토리 진행" 함수.
+// setTimeout 두 개로 시간차를 두어 phase를 순차적으로 전환하는 간단한 타이머 기반
+// 상태 머신이다: 즉시 healing → 1.2초 후 flying(날아감) → 3.2초 후 returned(기사 도착).
+// 각 단계 전환에 맞춰 템플릿의 CSS 애니메이션(까치 이동/날개짓 등)이 함께 재생된다.
 function heal(color) {
   selectedBandage.value = color
   phase.value = 'healing'
@@ -147,6 +169,7 @@ function heal(color) {
   }, 3200)
 }
 
+// "다시 치료하기" 버튼: 선택/진행 상태를 모두 초기값으로 되돌려 스토리를 처음부터 다시 시작한다
 function resetStory() {
   selectedBandage.value = null
   phase.value = 'injured'
@@ -398,6 +421,8 @@ function resetStory() {
                         />
                       </g>
 
+                      <!-- 붕대 선택 후(selectedBandage 존재)에만 표시. bandageColor computed 값을
+                           CSS 커스텀 프로퍼티(--bandage-color)로 전달해 붕대 색을 동적으로 칠한다 -->
                       <g
                         v-if="selectedBandage"
                         class="bandage-wrap"
@@ -483,11 +508,14 @@ function resetStory() {
                   </defs>
                 </svg>
 
+                <!-- 까치가 돌아온 단계에서만 신문 아이콘 노출 -->
                 <span v-if="phase === 'returned'" class="newspaper">📰</span>
               </div>
             </div>
           </div>
 
+          <!-- phase 값에 따라 서로 다른 말풍선을 노출(동시에 하나만 true가 되므로 배타적으로 표시됨).
+               <Transition>로 감싸 말풍선이 나타나고 사라질 때 CSS 트랜지션 애니메이션이 붙는다 -->
           <Transition name="bubble">
             <div v-if="phase === 'injured'" class="speech">도와주세요…</div>
           </Transition>
@@ -506,6 +534,8 @@ function resetStory() {
         </div>
       </div>
 
+      <!-- 아직 치료 전(injured)일 때만 붕대 선택 버튼을 보여준다.
+           각 버튼 클릭이 heal(color)를 호출해 phase를 healing으로 바꾸는 트리거가 된다 -->
       <div v-if="phase === 'injured'" class="selector">
         <h2>어떤 붕대로 치료할까요?</h2>
 
@@ -532,6 +562,7 @@ function resetStory() {
         </div>
       </div>
 
+      <!-- 까치가 돌아왔고(phase === 'returned') 기사 데이터도 준비됐을 때만 기사 카드 표시 -->
       <Transition name="card">
         <el-card v-if="phase === 'returned' && currentArticle" class="article-card" shadow="hover">
           <div class="article-header">
@@ -553,6 +584,7 @@ function resetStory() {
           <div class="section">
             <h3>Vocabulary</h3>
 
+            <!-- currentArticle.words 배열을 순회하며 단어/뜻 목록을 렌더링 (배열 렌더링, v-for + :key) -->
             <el-descriptions :column="2" border>
               <el-descriptions-item v-for="item in currentArticle.words" :key="item.word" :label="item.word">
                 {{ item.meaning }}
@@ -561,6 +593,7 @@ function resetStory() {
           </div>
 
           <div class="actions">
+            <!-- resetStory() 호출 -> 상태 초기화 -> phase가 'injured'로 돌아가 처음 화면부터 다시 시작 -->
             <el-button class="reset" type="primary" @click="resetStory">🔁 다시 치료하기</el-button>
           </div>
         </el-card>

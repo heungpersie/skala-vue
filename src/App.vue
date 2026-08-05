@@ -1,15 +1,20 @@
 <!--   http://localhost:5173/skala-vue/-->
 
 <script setup>
+// 앱의 루트 컴포넌트. 상단 네비게이션(카테고리/탭 바)과 로그인 상태 UI를 그리고,
+// 실제 페이지 내용은 <RouterView />를 통해 현재 라우트에 맞는 뷰 컴포넌트로 위임한다.
 import { computed } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 
 import { useAuthStore } from '@/stores/auth.js'
 
+// useRoute()는 현재 라우트 정보(읽기 전용), useRouter()는 이동(push 등)을 위한 라우터 인스턴스.
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 
+// 상단 네비게이션에 표시할 카테고리/탭 구조를 정의한다.
+// 라우트의 meta.category, meta.tab 값과 매칭시켜 현재 활성화된 메뉴를 하이라이트하는 데 사용한다.
 const categories = [
   {
     key: 'weather',
@@ -46,14 +51,18 @@ const categories = [
   },
 ]
 
+// 현재 라우트의 meta.category를 읽어온다. 라우트가 바뀌면 route가 반응형으로 갱신되므로
+// computed로 선언해두면 페이지 이동 시 자동으로 다시 계산된다.
 const activeCategoryKey = computed(() => route.meta.category ?? null)
 
+// 위에서 구한 key로 categories 배열에서 해당 카테고리 객체(탭 목록 포함)를 찾는다.
 const activeCategory = computed(
   () => categories.find((category) => category.key === activeCategoryKey.value) ?? null,
 )
 
 const activeTabKey = computed(() => route.meta.tab ?? null)
 
+// 로그아웃 후 보호된 페이지에 남아있지 않도록 홈으로 이동시킨다.
 async function handleLogout() {
   authStore.logout()
   await router.push('/')

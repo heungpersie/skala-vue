@@ -1,4 +1,11 @@
 <script setup>
+// ─────────────────────────────────────────────────────────────
+// [MockDash] /dashboard 라우트에 연결된 로그인 후 대시보드 화면입니다.
+// router/index.js에서 meta: { requiresAuth: true }로 표시되어 있어,
+// beforeEach 가드가 authStore.isLoggedIn이 false면 /login으로 리다이렉트시킵니다.
+// 즉 이 컴포넌트가 그려진다는 것 자체가 "로그인된 사용자"임을 전제로 합니다.
+// storeToRefs로 Pinia 스토어의 user 상태를 반응형을 유지한 채 꺼내 화면에 표시합니다.
+// ─────────────────────────────────────────────────────────────
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { RouterLink, useRouter } from 'vue-router'
@@ -8,8 +15,11 @@ import { useAuthStore } from '@/stores/auth.js'
 const authStore = useAuthStore()
 const router = useRouter()
 
+// storeToRefs를 쓰지 않고 authStore.user처럼 직접 구조분해하면 반응성이 끊어지므로,
+// 반응형 참조를 유지한 채 user만 꺼내옵니다(액션 함수는 그대로 authStore.xxx()로 호출).
 const { user } = storeToRefs(authStore)
 
+// 대시보드에서 다른 실습 화면들로 바로 이동할 수 있게 해주는 바로가기 카드 목록입니다.
 const quickLinks = [
   {
     to: '/weather-store',
@@ -38,12 +48,16 @@ const quickLinks = [
 
 ]
 
+// 로그아웃 버튼 클릭 시 Pinia 스토어의 토큰/사용자 정보를 지우고 로그인 화면으로 보냅니다.
 async function logout() {
   authStore.logout()
   await router.replace('/login')
 }
 
 // 새로고침 후에도 로그인 상태가 실제로 유효한지 서버에서 다시 확인합니다.
+// (localStorage에 남은 토큰이 만료됐거나 서버에서 폐기됐을 수 있으므로,
+//  /auth/me 호출이 실패하면 authStore.fetchMyProfile 내부에서 인증 정보를 정리하고
+//  여기서는 로그인 화면으로 리다이렉트만 해줍니다.)
 onMounted(async () => {
   try {
     await authStore.fetchMyProfile()

@@ -1,8 +1,13 @@
 <script setup>
 /* ── [Router 실습] NotFoundView.vue ──
-   Catch-all Route(/:pathMatch(.*)*)가 정의되지 않은 경로 접근 시 렌더링한다. */
+   Catch-all Route(path: '/:pathMatch(.*)*', 라우터 설정의 마지막 항목)가 정의되지 않은
+   경로 접근 시 렌더링한다. 즉 어떤 라우트에도 매칭되지 않을 때의 기본 화면(fallback)이다. */
 import { useRoute, useRouter } from 'vue-router'
 
+// useRoute(): 현재 활성화된 라우트의 정보(경로 fullPath, 동적 세그먼트 params, 쿼리스트링 query 등)를
+//   읽기 전용으로 돌려주는 컴포저블. 여기서는 사용자가 어떤 잘못된 주소로 들어왔는지 보여주는 데 쓴다.
+// useRouter(): router.push/back 등 "코드로 페이지를 이동시키는" 프로그래매틱 내비게이션을 위한
+//   라우터 인스턴스. <RouterLink>가 아니라 버튼 클릭 같은 이벤트 안에서 이동해야 할 때 사용한다.
 const route = useRoute()
 const router = useRouter()
 

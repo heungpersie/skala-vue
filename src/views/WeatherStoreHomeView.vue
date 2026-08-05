@@ -1,8 +1,10 @@
 <script setup>
 /* ── [Store 실습 / 과제5] WeatherStoreHomeView.vue ──
-   WeatherHomeView.vue(과제4)를 기반으로, Pinia configStore를 붙여 날씨 단위(섭씨/화씨)를
-   전환할 수 있게 만든 메인 날씨 대시보드. 도시 목록/실시간 API는 과제4(Open-Meteo)와 분리된
-   useOpenWeatherCities 싱글턴 상태로 Axios + OpenWeatherMap을 사용한다. */
+   route: '/weather-store'. WeatherHomeView.vue(과제4)를 기반으로, Pinia configStore를 붙여
+   날씨 단위(섭씨/화씨)를 전환할 수 있게 만든 메인 날씨 대시보드. 도시 목록/실시간 API는
+   과제4(Open-Meteo)와 분리된 useOpenWeatherCities 싱글턴 상태로 Axios + OpenWeatherMap을 사용한다.
+   이 뷰는 Pinia store(configStore)를 사용하는 버전이다 — store 없이 컴포저블만으로 구현한
+   버전은 WeatherHomeView.vue 참고. */
 import { ref, computed, watch, watchEffect, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseDashboardCard from '@/components/exercise/BaseDashboardCard.vue'
@@ -16,6 +18,9 @@ import { searchOpenWeatherCities } from '@/composables/useOpenWeatherApi'
 import { useConfigStore } from '@/stores/configStore'
 
 const router = useRouter()
+// Pinia store — 단위(섭씨/화씨) 설정을 전역으로 관리한다. UnitToggler 컴포넌트가 이 store의
+// toggleUnit()을 호출하면, 이 컴포넌트를 포함해 store를 구독하는 모든 곳(예: 상세 페이지)의
+// 온도 표시가 함께 바뀐다 — props/emit로 값을 일일이 전달할 필요가 없는 것이 store의 장점이다.
 const configStore = useConfigStore()
 
 /* ── 반응형 상태 + 날씨 데이터 배열 (Home/Detail 공유, Axios + OpenWeatherMap API) ── */

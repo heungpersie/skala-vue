@@ -1,18 +1,33 @@
 <script setup>
+// ─────────────────────────────────────────────────────────────
+// [MagpieLibraryView] /library 라우트의 "까치의 서재" 화면입니다.
+// - axios로 카카오 책 검색 Open API(dapi.kakao.com)를 호출해 키워드로 책을 검색합니다.
+// - 인증은 카카오 REST API 키(VITE_KAKAO_API_KEY 환경변수)를 Authorization 헤더에 실어 보냅니다.
+// - 검색 결과 중 담고 싶은 책을 위시리스트(ref 배열)에 추가/삭제할 수 있습니다.
+//   (별도 서버 저장 없이 컴포넌트 메모리에만 유지되는 반응형 상태입니다.)
+// ─────────────────────────────────────────────────────────────
 import { ref } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { Search, Loading } from '@element-plus/icons-vue'
 
+// Vite는 .env의 VITE_ 접두사가 붙은 변수만 import.meta.env로 클라이언트에 노출합니다.
+// 키가 없을 수도 있으니 빈 문자열을 기본값으로 두고, 아래 searchBooks에서 별도 안내합니다.
 const KAKAO_API_KEY = import.meta.env.VITE_KAKAO_API_KEY || ''
 
+// ref: 원시값/객체를 감싸 반응형으로 만드는 기본 API. .value로 접근/변경합니다.
 const keyword = ref('')
 const books = ref([])
 const isSearching = ref(false)
 const wishlist = ref([])
 
+// isbn을 기준으로 이미 위시리스트에 담긴 책인지 판별하는 헬퍼입니다.
+// (버튼 라벨/색상을 위시 여부에 따라 다르게 보여주는 데 사용됩니다.)
 const isWished = (book) => wishlist.value.some((item) => item.isbn === book.isbn)
 
+// 카카오 책 검색 API를 호출하는 비동기 함수입니다.
+// 입력값/키 유무를 먼저 검사하고, isSearching으로 로딩 상태를 관리하며,
+// 성공/실패/완료 각각에서 사용자에게 el-message로 피드백을 줍니다.
 const searchBooks = async () => {
   const normalized = keyword.value.trim()
 
@@ -34,6 +49,7 @@ const searchBooks = async () => {
         query: normalized,
         size: 12,
       },
+      // 카카오 API는 Bearer 토큰이 아닌 "KakaoAK {REST API 키}" 형식을 요구합니다.
       headers: {
         Authorization: `KakaoAK ${KAKAO_API_KEY}`,
       },
@@ -45,14 +61,18 @@ const searchBooks = async () => {
       ElMessage.info('검색 결과가 없습니다')
     }
   } catch (error) {
+    // 네트워크 오류/키 만료 등 예외 상황에서도 화면이 깨지지 않도록 결과를 비우고 안내만 띄웁니다.
     console.error(error)
     books.value = []
     ElMessage.warning('책 검색에 실패했습니다. 잠시 후 다시 시도해주세요.')
   } finally {
+    // 성공/실패 여부와 무관하게 로딩 스피너는 항상 꺼줍니다.
     isSearching.value = false
   }
 }
 
+// 검색 결과 카드의 "위시리스트에 담기/삭제" 버튼에서 호출됩니다.
+// 이미 담긴 책이면 제거, 아니면 추가 — 하나의 토글 함수로 두 동작을 처리합니다.
 const toggleWishlist = (book) => {
   if (isWished(book)) {
     wishlist.value = wishlist.value.filter((item) => item.isbn !== book.isbn)
@@ -64,6 +84,7 @@ const toggleWishlist = (book) => {
   ElMessage.success(`${book.title} 위시리스트에 추가했습니다`)
 }
 
+// 위시리스트 영역에서 직접 삭제할 때 사용하는 함수입니다(toggleWishlist의 삭제 분기와 동일한 로직).
 const removeFromWishlist = (book) => {
   wishlist.value = wishlist.value.filter((item) => item.isbn !== book.isbn)
   ElMessage.success('삭제되었습니다!')

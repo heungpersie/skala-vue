@@ -2,11 +2,15 @@
 /* ── [Router 실습] SearchBar.vue ──
    - 부모로부터 검색어(query)를 props로 전달받아 표시
    - 입력이 발생하면 update-query 이벤트로 검색어를 부모에게 전달 (emits)
-   - 자식은 props를 직접 수정하지 않는다(단방향 데이터 흐름 유지) */
+   - 자식은 props를 직접 수정하지 않는다(단방향 데이터 흐름 유지)
+   순수 HTML <input>으로 구현한 버전. Element Plus <el-input> 버전은
+   src/views/work/SearchBar.vue 참고 (둘 다 props/emits 패턴은 동일). */
+// query: 부모가 들고 있는 검색어 상태를 그대로 내려받아 화면에 표시
 defineProps({
   query: { type: String, default: '' },
 })
 
+// update-query: 입력값이 바뀔 때 부모에게 새 검색어를 알리기 위한 이벤트
 const emit = defineEmits(['update-query'])
 
 /* 한글 즉시 동기화: v-model 대신 :value + @input 조합
