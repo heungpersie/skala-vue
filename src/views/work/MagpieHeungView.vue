@@ -155,14 +155,18 @@ function resetStory() {
 
 <template>
   <div class="board" :data-theme="selectedBandage || 'default'">
+    <h1 class="page-title">은혜 갚는 까치</h1>
+
     <div class="paper">
       <div class="hero">
         <div class="hero-text">
           <span class="badge">🐦‍⬛ Economist Magpie</span>
-          <h1>은혜 갚는 까치</h1>
           <p>
-            흥부를 도왔던 까치는 오늘도 누군가의 도움을 기다립니다. 다친 까치를 치료하면, 까치는
-            세상의 중요한 소식을 물어다 줍니다.
+            흥부를 도왔던 까치는 오늘도 누군가의 도움을 기다립니다. 다친 까치를 정성껏 치료해주면,
+            까치는 고마움의 표시로 오늘의 주요 해외 소식을 물어다 줍니다. 붕대 색깔마다 정치,
+            경제, 환경, 과학 등 서로 다른 카테고리의 기사가 준비되어 있으니, 궁금한 소식을 골라
+            까치를 치료해보세요. 기사와 함께 정리된 핵심 단어로 시사 영어 공부도 자연스럽게 할 수
+            있습니다.
           </p>
         </div>
 
@@ -170,51 +174,227 @@ function resetStory() {
           <div class="scene">
             <div class="nest">🪹</div>
 
+            <svg
+              viewBox="0 0 360 96"
+              class="blossom-branch"
+              preserveAspectRatio="xMidYMin meet"
+              aria-hidden="true"
+            >
+              <defs>
+                <radialGradient id="blossomGlow" cx="50%" cy="15%" r="80%">
+                  <stop offset="0%" stop-color="#ffd6e8" stop-opacity="0.5" />
+                  <stop offset="100%" stop-color="#ffd6e8" stop-opacity="0" />
+                </radialGradient>
+                <radialGradient id="petalGradLight" cx="35%" cy="30%" r="70%">
+                  <stop offset="0%" stop-color="#fff3f7" />
+                  <stop offset="100%" stop-color="#f6b9d2" />
+                </radialGradient>
+                <radialGradient id="petalGradDeep" cx="35%" cy="30%" r="70%">
+                  <stop offset="0%" stop-color="#f9c9dd" />
+                  <stop offset="100%" stop-color="#e97ba5" />
+                </radialGradient>
+                <symbol id="sakura" viewBox="-9 -9 18 18">
+                  <ellipse cx="0" cy="-4.6" rx="2.8" ry="4.4" transform="rotate(0)" />
+                  <ellipse cx="0" cy="-4.6" rx="2.8" ry="4.4" transform="rotate(72)" />
+                  <ellipse cx="0" cy="-4.6" rx="2.8" ry="4.4" transform="rotate(144)" />
+                  <ellipse cx="0" cy="-4.6" rx="2.8" ry="4.4" transform="rotate(216)" />
+                  <ellipse cx="0" cy="-4.6" rx="2.8" ry="4.4" transform="rotate(288)" />
+                  <circle cx="0" cy="0" r="1.7" fill="#f9c04d" />
+                </symbol>
+              </defs>
+
+              <ellipse cx="150" cy="6" rx="200" ry="42" fill="url(#blossomGlow)" />
+
+              <!-- 가지 -->
+              <path
+                d="M-10 4 Q60 0 96 14 Q130 26 170 18 Q220 8 260 20 Q300 30 344 12"
+                stroke="#7a4a2c"
+                stroke-width="5"
+                fill="none"
+                stroke-linecap="round"
+              />
+              <path d="M96 14 Q92 26 82 34" stroke="#7a4a2c" stroke-width="3" fill="none" stroke-linecap="round" />
+              <path d="M170 18 Q176 30 166 38" stroke="#7a4a2c" stroke-width="3" fill="none" stroke-linecap="round" />
+              <path d="M260 20 Q268 32 254 40" stroke="#7a4a2c" stroke-width="3" fill="none" stroke-linecap="round" />
+
+              <!-- 잎 -->
+              <path d="M108 18 Q118 12 126 20 Q118 24 108 18 Z" fill="#8fae67" opacity="0.85" />
+              <path d="M220 14 Q230 8 238 16 Q230 20 220 14 Z" fill="#8fae67" opacity="0.85" />
+              <path d="M60 4 Q68 -1 75 6 Q68 9 60 4 Z" fill="#8fae67" opacity="0.75" />
+
+              <!-- 벚꽃 송이 (밝은 톤) -->
+              <g fill="url(#petalGradLight)">
+                <use href="#sakura" transform="translate(20,8) rotate(-10) scale(0.95)" />
+                <use href="#sakura" transform="translate(58,5) rotate(12) scale(0.75)" />
+                <use href="#sakura" transform="translate(90,20) rotate(-6) scale(1.05)" />
+                <use href="#sakura" transform="translate(150,14) rotate(8) scale(0.85)" />
+                <use href="#sakura" transform="translate(196,7) rotate(-14) scale(0.9)" />
+                <use href="#sakura" transform="translate(248,20) rotate(10) scale(1)" />
+                <use href="#sakura" transform="translate(300,12) rotate(-8) scale(0.8)" />
+                <use href="#sakura" transform="translate(336,24) rotate(6) scale(0.9)" />
+              </g>
+
+              <!-- 벚꽃 송이 (진한 톤, 깊이감) -->
+              <g fill="url(#petalGradDeep)">
+                <use href="#sakura" transform="translate(40,14) rotate(20) scale(0.65)" />
+                <use href="#sakura" transform="translate(112,9) rotate(-18) scale(0.6)" />
+                <use href="#sakura" transform="translate(172,28) rotate(14) scale(0.68)" />
+                <use href="#sakura" transform="translate(222,5) rotate(-10) scale(0.58)" />
+                <use href="#sakura" transform="translate(278,30) rotate(16) scale(0.65)" />
+              </g>
+
+              <!-- 흩날리는 꽃잎 -->
+              <g class="falling-petals" fill="#f6b9d2">
+                <ellipse class="petal p1" cx="70" cy="22" rx="2.6" ry="4.2" />
+                <ellipse class="petal p2" cx="180" cy="14" rx="2.4" ry="3.8" />
+                <ellipse class="petal p3" cx="260" cy="24" rx="2.8" ry="4.4" />
+                <ellipse class="petal p4" cx="320" cy="18" rx="2.3" ry="3.6" />
+              </g>
+            </svg>
+
             <div class="magpie" :class="phase">
               <div class="bird">
                 <svg viewBox="0 0 160 170" class="magpie-svg">
                   <g class="magpie-body-group">
                     <g class="cough-wrap">
-                      <path
-                        class="tail"
-                        d="M100 96 L134 118 L120 122 L128 136 L112 128 L104 112 Z"
-                        fill="url(#magpieTailGrad)"
-                      />
-
-                      <ellipse cx="80" cy="112" rx="32" ry="26" fill="var(--magpie-black)" />
-
-                      <ellipse cx="72" cy="120" rx="16" ry="13" fill="var(--magpie-white)" />
-
-                      <circle cx="54" cy="90" r="19" fill="var(--magpie-black)" />
+                      <!-- 꼬리: 4겹 깃털 + 깃대(rachis) -->
+                      <g class="tail">
+                        <path
+                          d="M96 98 L146 110 L130 122 L148 140 L118 130 L100 116 Z"
+                          fill="url(#tailGradBack)"
+                          opacity="0.85"
+                        />
+                        <path d="M100 106 L138 118" stroke="rgba(255,255,255,0.15)" stroke-width="0.8" />
+                        <path
+                          d="M97 102 L132 113 L121 122 L132 136 L109 127 L99 114 Z"
+                          fill="url(#tailGradMid)"
+                        />
+                        <path d="M100 109 L125 118" stroke="rgba(255,255,255,0.18)" stroke-width="0.8" />
+                        <path
+                          d="M98 106 L120 114 L113 121 L118 130 L103 123 L97 112 Z"
+                          fill="url(#tailGradFront)"
+                        />
+                        <path d="M100 112 L113 118" stroke="rgba(255,255,255,0.2)" stroke-width="0.8" />
+                        <path
+                          d="M99 110 L110 115 L106 120 L108 126 L98 122 L96 116 Z"
+                          fill="url(#tailGradInner)"
+                          opacity="0.9"
+                        />
+                      </g>
 
                       <path
                         v-if="phase === 'injured'"
-                        d="M68 129 L60 146 M78 129 L86 146"
+                        d="M56 138 L50 144 L54 150 M76 136 L82 142 L78 150"
                         stroke="#1b1c1f"
                         stroke-width="3"
                         stroke-linecap="round"
+                        stroke-linejoin="round"
+                        fill="none"
                         class="leg-broken"
                       />
 
                       <g v-else class="leg-healed">
                         <path
-                          d="M68 129 L70 138 L68 145"
+                          d="M56 138 L54 150"
                           stroke="#1b1c1f"
                           stroke-width="3"
                           stroke-linecap="round"
                         />
                         <path
-                          d="M78 129 L76 138 L80 145"
+                          d="M76 136 L78 150"
                           stroke="#1b1c1f"
                           stroke-width="3"
                           stroke-linecap="round"
                         />
                         <path
-                          d="M60 136 L86 136"
-                          stroke="var(--magpie-white)"
-                          stroke-width="2.5"
+                          d="M49 150 L54 150 L59 149"
+                          stroke="#1b1c1f"
+                          stroke-width="2"
                           stroke-linecap="round"
+                        />
+                        <path d="M50 153 L54 152" stroke="#1b1c1f" stroke-width="1.4" stroke-linecap="round" />
+                        <path
+                          d="M71 150 L78 150 L85 149"
+                          stroke="#1b1c1f"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                        />
+                        <path d="M72 153 L78 152" stroke="#1b1c1f" stroke-width="1.4" stroke-linecap="round" />
+                      </g>
+
+                      <!-- 몸통 -->
+                      <path
+                        class="body"
+                        d="M36 96 C24 92 14 100 14 114 C14 130 26 146 48 151 C68 155 90 151 99 137 C107 124 105 106 90 98 C76 90 52 90 36 96 Z"
+                        fill="url(#bodySheen)"
+                        stroke="rgba(0,0,0,0.18)"
+                        stroke-width="0.6"
+                      />
+                      <path
+                        d="M40 98 Q60 94 82 102"
+                        stroke="rgba(255,255,255,0.18)"
+                        stroke-width="1.4"
+                        stroke-linecap="round"
+                        fill="none"
+                      />
+
+                      <!-- 배(흰 무늬) -->
+                      <path
+                        class="belly"
+                        d="M28 116 C22 128 28 144 46 149 C60 153 74 146 74 132 C74 120 62 112 48 113 C40 114 32 112 28 116 Z"
+                        fill="var(--magpie-white)"
+                      />
+                      <path
+                        d="M34 138 Q48 147 64 140"
+                        stroke="rgba(0,0,0,0.06)"
+                        stroke-width="6"
+                        stroke-linecap="round"
+                        fill="none"
+                      />
+
+                      <!-- 날개: 덮깃 결 + 소우깃(alula) + 청람색 스페큘럼 -->
+                      <g class="wing">
+                        <path
+                          d="M58 96 Q90 97 88 123 Q84 140 60 136 Q47 128 49 108 Q51 100 58 96 Z"
+                          fill="url(#bodySheen)"
+                          stroke="rgba(0,0,0,0.18)"
+                          stroke-width="0.6"
+                        />
+                        <path
+                          d="M64 106 Q79 108 77 123 Q73 132 62 128 Q55 119 58 110 Q60 106 64 106 Z"
+                          fill="var(--magpie-white)"
+                          opacity="0.92"
+                        />
+                        <path
+                          d="M62 128 Q72 132 82 124 Q78 136 64 136 Q60 133 62 128 Z"
+                          fill="url(#tailGradMid)"
+                          opacity="0.85"
+                        />
+                        <path
+                          d="M56 100 Q50 104 52 110 Q56 108 58 103 Z"
+                          fill="var(--magpie-black)"
                           opacity="0.9"
+                          stroke="rgba(0,0,0,0.2)"
+                          stroke-width="0.4"
+                        />
+                        <path
+                          d="M60 100 Q82 104 84 122"
+                          stroke="rgba(255,255,255,0.28)"
+                          stroke-width="1.2"
+                          fill="none"
+                          class="wing-line"
+                        />
+                        <path
+                          d="M56 112 Q70 116 74 128"
+                          stroke="rgba(255,255,255,0.16)"
+                          stroke-width="1"
+                          fill="none"
+                        />
+                        <path
+                          d="M53 122 Q64 126 68 134"
+                          stroke="rgba(255,255,255,0.12)"
+                          stroke-width="0.9"
+                          fill="none"
                         />
                       </g>
 
@@ -224,29 +404,81 @@ function resetStory() {
                         :style="{ '--bandage-color': bandageColor }"
                       >
                         <path
-                          d="M66 122 L80 122 L80 148 L66 148 Z"
+                          d="M50 140 Q56 138 62 140 L62 150 Q56 152 50 150 Z"
                           fill="var(--bandage-color)"
-                          opacity="0.9"
+                          opacity="0.92"
                         />
                         <path
-                          d="M69 126 L77 126 M69 132 L77 132 M69 138 L77 138 M69 144 L77 144"
-                          stroke="rgba(255,255,255,0.38)"
-                          stroke-width="1.6"
+                          d="M52 143 Q56 144 60 143 M52 146 Q56 147 60 146 M52 149 Q56 150 60 149"
+                          stroke="rgba(255,255,255,0.4)"
+                          stroke-width="1.3"
                           stroke-linecap="round"
+                          fill="none"
                         />
                       </g>
 
-                      <polygon points="38,90 28,88 38,96" fill="#f4b942" />
+                      <!-- 머리 -->
+                      <path
+                        d="M22.5 79 C21 65 30.5 56 43 56.5 C55 57 61.5 67 59.5 79 C58 90 49 97 39.5 97 C29.5 97 24 89 22.5 79 Z"
+                        fill="url(#headSheen)"
+                        stroke="rgba(0,0,0,0.18)"
+                        stroke-width="0.6"
+                      />
 
-                      <circle cx="52" cy="86" r="3" fill="var(--magpie-white)" />
+                      <!-- 부리 -->
+                      <path
+                        class="beak"
+                        d="M25 74.5 Q13 71 5 76 Q2.5 78 5.5 80.5 Q14 85 25 81.5 Q28 78 25 74.5 Z"
+                        fill="url(#beakGrad)"
+                      />
+                      <path
+                        d="M23 76 Q15 77 9 78"
+                        stroke="#a9711a"
+                        stroke-width="0.8"
+                        opacity="0.55"
+                        fill="none"
+                      />
+                      <circle cx="20" cy="76.4" r="0.7" fill="#8a5c14" opacity="0.6" />
+
+                      <!-- 눈 -->
+                      <path d="M31 71 Q36 68 41 71" stroke="rgba(0,0,0,0.15)" stroke-width="1.2" fill="none" />
+                      <circle cx="36" cy="76" r="3.6" fill="var(--magpie-white)" />
+                      <circle cx="36" cy="76" r="3.8" fill="none" stroke="rgba(0,0,0,0.25)" stroke-width="0.6" />
+                      <circle cx="35.3" cy="76.6" r="1.7" fill="#1b1c1f" />
+                      <circle cx="37.3" cy="74.6" r="0.7" fill="#ffffff" opacity="0.9" />
                     </g>
                   </g>
 
                   <defs>
-                    <linearGradient id="magpieTailGrad">
+                    <radialGradient id="bodySheen" cx="35%" cy="30%" r="75%">
+                      <stop offset="0%" stop-color="#464a54" />
+                      <stop offset="55%" stop-color="var(--magpie-black)" />
+                      <stop offset="100%" stop-color="var(--magpie-black)" />
+                    </radialGradient>
+                    <radialGradient id="headSheen" cx="40%" cy="25%" r="70%">
+                      <stop offset="0%" stop-color="#4a4d57" />
+                      <stop offset="55%" stop-color="var(--magpie-black)" />
+                      <stop offset="100%" stop-color="#0f1013" />
+                    </radialGradient>
+                    <linearGradient id="tailGradBack" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="var(--magpie-violet)" />
+                      <stop offset="100%" stop-color="var(--magpie-blue)" />
+                    </linearGradient>
+                    <linearGradient id="tailGradMid" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="var(--magpie-blue)" />
+                      <stop offset="100%" stop-color="var(--magpie-teal)" />
+                    </linearGradient>
+                    <linearGradient id="tailGradFront" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stop-color="var(--magpie-teal)" />
-                      <stop offset="55%" stop-color="var(--magpie-blue)" />
+                      <stop offset="100%" stop-color="var(--magpie-blue)" />
+                    </linearGradient>
+                    <linearGradient id="tailGradInner" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="var(--magpie-teal)" />
                       <stop offset="100%" stop-color="var(--magpie-violet)" />
+                    </linearGradient>
+                    <linearGradient id="beakGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#ffcf6b" />
+                      <stop offset="100%" stop-color="#d98f1f" />
                     </linearGradient>
                   </defs>
                 </svg>
@@ -278,37 +510,39 @@ function resetStory() {
         <h2>어떤 붕대로 치료할까요?</h2>
 
         <div class="bandage-grid">
-          <button class="bandage-btn yellow" @click="heal('yellow')">
+          <el-button class="bandage-btn yellow" @click="heal('yellow')">
             <span class="emoji">🟡</span>
             <strong>노랑 붕대</strong>
-          </button>
+          </el-button>
 
-          <button class="bandage-btn blue" @click="heal('blue')">
+          <el-button class="bandage-btn blue" @click="heal('blue')">
             <span class="emoji">🔵</span>
             <strong>파랑 붕대</strong>
-          </button>
+          </el-button>
 
-          <button class="bandage-btn red" @click="heal('red')">
+          <el-button class="bandage-btn red" @click="heal('red')">
             <span class="emoji">🔴</span>
             <strong>빨강 붕대</strong>
-          </button>
+          </el-button>
 
-          <button class="bandage-btn black" @click="heal('black')">
+          <el-button class="bandage-btn black" @click="heal('black')">
             <span class="emoji">⚫</span>
             <strong>검정 붕대</strong>
-          </button>
+          </el-button>
         </div>
       </div>
 
       <Transition name="card">
-        <section v-if="phase === 'returned' && currentArticle" class="article-card">
+        <el-card v-if="phase === 'returned' && currentArticle" class="article-card" shadow="hover">
           <div class="article-header">
             <div>
               <span class="source">📰 The Economist</span>
               <h2>{{ currentArticle.title }}</h2>
             </div>
 
-            <div class="chip">{{ currentArticle.emoji }} {{ currentArticle.category }}</div>
+            <el-tag class="chip" effect="light" round>
+              {{ currentArticle.emoji }} {{ currentArticle.category }}
+            </el-tag>
           </div>
 
           <div class="section">
@@ -319,18 +553,17 @@ function resetStory() {
           <div class="section">
             <h3>Vocabulary</h3>
 
-            <div class="vocab-grid">
-              <div v-for="item in currentArticle.words" :key="item.word" class="vocab-item">
-                <strong>{{ item.word }}</strong>
-                <span>{{ item.meaning }}</span>
-              </div>
-            </div>
+            <el-descriptions :column="2" border>
+              <el-descriptions-item v-for="item in currentArticle.words" :key="item.word" :label="item.word">
+                {{ item.meaning }}
+              </el-descriptions-item>
+            </el-descriptions>
           </div>
 
           <div class="actions">
-            <button class="reset" @click="resetStory">🔁 다시 치료하기</button>
+            <el-button class="reset" type="primary" @click="resetStory">🔁 다시 치료하기</el-button>
           </div>
-        </section>
+        </el-card>
       </Transition>
     </div>
   </div>
@@ -397,11 +630,15 @@ function resetStory() {
   padding: 36px;
 }
 
-.hero-text h1 {
-  margin: 14px 0 10px;
-  font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 1.05;
+.page-title {
+  width: 100%;
+  margin: 0 0 28px;
+  text-align: center;
+  font-size: clamp(1.7rem, 3vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
   color: var(--color-heading);
+  box-sizing: border-box;
 }
 
 .hero-text p {
@@ -449,6 +686,59 @@ function resetStory() {
   transform: translateX(-50%);
   font-size: 4rem;
   filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.12));
+}
+
+.blossom-branch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  z-index: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.22));
+}
+
+.falling-petals .petal {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: petal-fall 6s ease-in infinite;
+}
+
+.falling-petals .p1 {
+  animation-delay: 0s;
+}
+.falling-petals .p2 {
+  animation-delay: 1.4s;
+}
+.falling-petals .p3 {
+  animation-delay: 2.8s;
+}
+.falling-petals .p4 {
+  animation-delay: 4.2s;
+}
+
+@keyframes petal-fall {
+  0% {
+    transform: translate(0, -10px) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(16px, 58px) rotate(160deg);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .falling-petals .petal {
+    animation: none;
+  }
 }
 
 .magpie {
@@ -584,6 +874,7 @@ function resetStory() {
   position: absolute;
   top: 18px;
   right: 10px;
+  z-index: 3;
   max-width: 220px;
   padding: 12px 14px;
   border-radius: 18px 18px 4px 18px;
@@ -596,7 +887,7 @@ function resetStory() {
 }
 
 .speech.success {
-  background: var(--magpie-accent-soft);
+  background: var(--color-background-mute);
   border-color: var(--magpie-accent-strong);
 }
 
@@ -632,21 +923,21 @@ function resetStory() {
 }
 
 .bandage-btn {
+  height: auto;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row; /* 세로 -> 가로 */
+  align-items: center;
+  justify-content: center; /* 가운데 정렬 */
+  gap: 8px; /* 이모지와 글자 사이 간격 */
   padding: 18px 14px;
   border-radius: 16px;
-  border: 1px solid var(--color-border);
-  background: var(--color-background);
-  color: var(--color-heading);
-  cursor: pointer;
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease,
     border-color 0.18s ease;
-  text-align: left;
+  text-align: center;
 }
+
 
 .bandage-btn:hover {
   transform: translateY(-4px);
@@ -655,11 +946,7 @@ function resetStory() {
 
 .bandage-btn .emoji {
   font-size: 1.6rem;
-}
-
-.bandage-btn small {
-  color: var(--color-text);
-  opacity: 0.7;
+  margin-right: 8px;
 }
 
 .bandage-btn.yellow:hover {
@@ -676,12 +963,8 @@ function resetStory() {
 }
 
 .article-card {
-  position: relative;
   margin: 0 24px 28px;
-  background: var(--color-background-mute);
-  border: 1px solid var(--color-border);
   border-radius: 20px;
-  padding: 28px;
   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.25);
 }
 
@@ -710,10 +993,6 @@ function resetStory() {
 
 .chip {
   white-space: nowrap;
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: var(--magpie-accent-soft);
-  color: var(--magpie-accent);
   font-weight: 700;
   font-size: 0.9rem;
 }
@@ -737,31 +1016,6 @@ function resetStory() {
   opacity: 0.9;
 }
 
-.vocab-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.vocab-item {
-  padding: 14px;
-  border-radius: 14px;
-  background: var(--color-background);
-  border: 1px solid var(--color-border);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.vocab-item strong {
-  color: var(--color-heading);
-}
-
-.vocab-item span {
-  color: var(--color-text);
-  opacity: 0.7;
-}
-
 .actions {
   display: flex;
   justify-content: center;
@@ -769,13 +1023,9 @@ function resetStory() {
 }
 
 .reset {
-  border: none;
   border-radius: 999px;
-  padding: 12px 20px;
   background: var(--magpie-gradient);
-  color: #fff;
-  font-weight: 700;
-  cursor: pointer;
+  border: none;
   box-shadow: 0 6px 16px var(--magpie-accent-strong);
 }
 
@@ -824,11 +1074,9 @@ function resetStory() {
 
   .article-card {
     margin: 0 14px 18px;
-    padding: 20px;
   }
 
-  .bandage-grid,
-  .vocab-grid {
+  .bandage-grid {
     grid-template-columns: 1fr;
   }
 }

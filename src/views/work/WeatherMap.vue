@@ -16,7 +16,7 @@ let map = null
 const markers = new Map() // id -> L.Marker
 
 function badgeClass(city) {
-  if (city.temp == null) return 'unknown'
+  if (city.temp === null || city.temp === undefined) return 'unknown'
   if (city.temp >= 25) return 'hot'
   if (city.temp >= 10) return 'cool'
   return 'cold'
@@ -24,7 +24,7 @@ function badgeClass(city) {
 
 function buildIcon(city, isSelected) {
   const cls = ['pin', badgeClass(city), isSelected ? 'selected' : ''].join(' ')
-  const label = city.temp == null ? '?' : `${city.temp}°`
+  const label = city.temp === null || city.temp === undefined ? '?' : `${city.temp}°`
   return L.divIcon({
     className: 'weather-pin-wrap',
     html: `<div class="${cls}"><span class="pin-label">${label}</span></div>`,
@@ -48,7 +48,7 @@ function renderMarkers() {
   props.cities.forEach((city) => {
     const isSelected = city.id === props.selectedId
     const icon = buildIcon(city, isSelected)
-    const popupHtml = `<strong>${city.name}</strong><br/>${city.status ?? '조회 중...'} · ${city.temp == null ? '-' : city.temp + '°C'}`
+    const popupHtml = `<strong>${city.name}</strong><br/>${city.status ?? '조회 중...'} · ${city.temp === null || city.temp === undefined ? '-' : city.temp + '°C'}`
 
     let marker = markers.get(city.id)
     if (marker) {

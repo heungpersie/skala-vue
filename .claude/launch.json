@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 5173
+    },
+    {
+      "name": "1group-jaeheung-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "/Users/jorbakaramazov/projects/6class-1group", "--", "--port", "5174"],
+      "port": 5174
     }
   ]
 }

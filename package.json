@@ -8,6 +8,7 @@
     "server": "node server.js",
     "dev:all": "run-p dev server",
     "build": "vite build",
+    "build:pages": "vite build --mode pages",
     "preview": "vite preview",
     "lint": "run-s \"lint:*\"",
     "lint:oxlint": "oxlint . --fix",
@@ -16,6 +17,7 @@
   },
   "dependencies": {
     "axios": "^1.19.0",
+    "element-plus": "^2.14.3",
     "leaflet": "^1.9.4",
     "pinia": "^4.0.2",
     "vue": "^3.5.40",

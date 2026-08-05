@@ -7,13 +7,13 @@ export const authApi = {
     return response.data
   },
 
-  async getMyProfile() {
-    const response = await http.get('/auth/me')
+  async register(payload) {
+    const response = await http.post('/auth/register', payload)
     return response.data
   },
 
-  async getProtectedMessage() {
-    const response = await http.get('/auth/protected-message')
+  async getMyProfile() {
+    const response = await http.get('/auth/me')
     return response.data
   },
 }

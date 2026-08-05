@@ -116,7 +116,14 @@ const showDetail = (city) => {
 <template>
   <div class="card-panel">
     <p class="panel-title">🌤️ 과제 3: 날씨 (컴포넌트) <span class="live-dot" title="Open-Meteo 실시간 연동"></span></p>
-    <p v-if="apiError" class="api-error">⚠️ 날씨 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
+    <el-alert
+      v-if="apiError"
+      class="api-error"
+      title="⚠️ 날씨 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
+      type="error"
+      show-icon
+      :closable="false"
+    />
 
     <!-- [과제3-2] 공통 카드에 SearchBar를 slot으로 주입 -->
     <BaseDashboardCard title="🔍 도시 검색 (한글 즉시 동기화)">
@@ -128,39 +135,33 @@ const showDetail = (city) => {
       <div class="controls">
         <div class="control-row">
           <span class="control-label">상태 필터</span>
-          <div class="chip-group">
-            <button
-              v-for="status in statusOptions"
-              :key="status"
-              class="chip"
-              :class="{ active: activeStatus === status }"
-              @click="activeStatus = status"
-            >
+          <el-radio-group v-model="activeStatus" size="small">
+            <el-radio-button v-for="status in statusOptions" :key="status" :value="status">
               {{ status }}
-            </button>
-          </div>
+            </el-radio-button>
+          </el-radio-group>
         </div>
 
         <div class="control-row">
           <span class="control-label">정렬</span>
-          <select v-model="sortOrder" class="sort-select">
-            <option value="default">기본순</option>
-            <option value="temp-desc">기온 높은순</option>
-            <option value="temp-asc">기온 낮은순</option>
-            <option value="name">이름순</option>
-          </select>
+          <el-select v-model="sortOrder" class="sort-select" style="width: 140px">
+            <el-option label="기본순" value="default" />
+            <el-option label="기온 높은순" value="temp-desc" />
+            <el-option label="기온 낮은순" value="temp-asc" />
+            <el-option label="이름순" value="name" />
+          </el-select>
         </div>
 
         <div class="control-row" v-if="averageTemp !== null">
           <span class="control-label">평균 기온</span>
-          <span class="avg-temp">{{ averageTemp }}°C</span>
+          <el-tag type="primary" effect="plain">{{ averageTemp }}°C</el-tag>
         </div>
       </div>
     </BaseDashboardCard>
 
     <!-- [과제3-2] 공통 카드에 날씨 현황 목록을 slot으로 주입 -->
     <BaseDashboardCard title="📍 지역별 날씨 현황">
-      <div v-if="loading" class="loading">날씨 불러오는 중...</div>
+      <el-skeleton v-if="loading" :rows="4" animated />
 
       <TransitionGroup v-else name="card-list" tag="div" class="card-list">
         <WeatherCard
@@ -185,7 +186,7 @@ const showDetail = (city) => {
     </BaseDashboardCard>
 
     <!-- 상태바 -->
-    <div class="status-bar">{{ statusMessage }}</div>
+    <el-alert class="status-bar" :title="statusMessage" type="info" :closable="false" center />
   </div>
 </template>
 
@@ -234,11 +235,6 @@ const showDetail = (city) => {
   100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
 }
 .api-error {
-  background: #fdecea;
-  color: #c0392b;
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 13px;
   margin: 0 0 16px 0;
 }
 
@@ -259,46 +255,6 @@ const showDetail = (city) => {
   font-weight: 700;
   color: var(--color-text);
   min-width: 60px;
-}
-.chip-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.chip {
-  border: 1px solid var(--color-border);
-  background: var(--color-background);
-  border-radius: 20px;
-  padding: 5px 12px;
-  font-size: 12px;
-  color: var(--color-text);
-  cursor: pointer;
-}
-.chip.active {
-  background: var(--magpie-gradient);
-  border-color: transparent;
-  color: #fff;
-}
-.sort-select {
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 13px;
-  background: var(--color-background);
-  color: var(--color-text);
-}
-.avg-temp {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--magpie-accent);
-}
-
-.loading {
-  text-align: center;
-  padding: 24px 0;
-  color: var(--color-text);
-  opacity: 0.7;
-  font-size: 14px;
 }
 
 /* TransitionGroup 애니메이션:
@@ -322,15 +278,6 @@ const showDetail = (city) => {
   width: 100%;
 }
 
-.status-bar {
-  text-align: center;
-  background: var(--magpie-accent-soft);
-  color: var(--magpie-accent);
-  font-size: 14px;
-  font-weight: 600;
-  padding: 12px;
-  border-radius: 10px;
-}
 .empty {
   text-align: center;
   color: var(--color-text);

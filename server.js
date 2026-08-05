@@ -1,11 +1,7 @@
 import http from 'node:http'
 
-import { handleAuthRoutes } from './mock-api/routes/authRoutes.js'
-import {
-  sendError,
-  sendJson,
-  waitForRequestedDelay,
-} from './mock-api/utils/httpUtils.js'
+import { handleMockApiRequest } from './mock-api/handler.js'
+import { sendError, sendJson } from './mock-api/utils/httpUtils.js'
 
 const port = Number(process.env.API_PORT ?? 3001)
 
@@ -19,21 +15,13 @@ const server = http.createServer(async (request, response) => {
   const url = new URL(request.url ?? '/', `http://${host}`)
 
   try {
-    await waitForRequestedDelay(url)
+    const handled = await handleMockApiRequest(request, response, url)
 
-    if (request.method === 'GET' && url.pathname === '/api/health') {
-      sendJson(response, 200, {
-        status: 'ok',
-        service: 'JWT Mock API',
+    if (!handled) {
+      sendJson(response, 404, {
+        message: '존재하지 않는 API 경로입니다.',
       })
-      return
     }
-
-    if (await handleAuthRoutes(request, response, url)) return
-
-    sendJson(response, 404, {
-      message: '존재하지 않는 API 경로입니다.',
-    })
   } catch (error) {
     sendError(response, error)
   }

@@ -19,10 +19,28 @@ export default defineConfig([
         ...globals.browser,
       },
     },
+    rules: {
+      'no-console': 'off', // console.log는 허용
+    },
+  },
+
+  {
+    files: ['server.js', 'mock-api/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
   },
 
   js.configs.recommended,
   ...pluginVue.configs['flat/essential'],
+
+  {
+    rules: {
+      'vue/multi-word-component-names': ['error', { ignores: ['index'] }],
+    },
+  },
 
   ...pluginOxlint.buildFromOxlintConfigFile('.oxlintrc.json'),
 

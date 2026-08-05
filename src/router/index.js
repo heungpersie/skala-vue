@@ -3,7 +3,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import MockDash from '@/views/work/MockDash.vue'
 import LoginView from '@/views/work/LoginView.vue'
-import HomeView from '../views/Day1/HomeView.vue'
+import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -19,53 +19,21 @@ const router = createRouter({
       component: LoginView,
     },
     {
+      path: '/signup',
+      name: 'signup',
+      component: () => import('@/views/work/SignUpView.vue'),
+    },
+    {
       path: '/dashboard',
       name: 'dashboard',
       component: MockDash,
       meta: { requiresAuth: true },
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/Day1/AboutView.vue'),
-    },
-    {
-      path: '/reactivity',
-      name: 'reactivity',
-      component: () => import('../views/Day1/ReactivityView.vue'),
-    },
-    {
-      path: '/interpolation',
-      name: 'interpolation',
-      component: () => import('../views/Day1/InterpolationView.vue'),
-    },
-    {
-      path: '/vfunction',
-      name: 'vfunction',
-      component: () => import('../views/Day1/VfunctionView.vue'),
-    },
-    {
-      path: '/Event',
-      name: 'Event',
-      component: () => import('../views/Day1/EventView.vue'),
-    },
-    {
-      path: '/Binding',
-      name: 'Binding',
-      component: () => import('../views/Day1/BindingView.vue'),
-    },
-    {
-      path: '/Style',
-      name: 'Style',
-      component: () => import('../views/Day1/StyleView.vue'),
-    },
-    {
       path: '/WeatherMockup',
       name: 'WeatherMockup',
       component: () => import('../views/work/WeatherMockup.vue'),
+      meta: { category: 'weather', tab: 'mockup' },
     },
     {
       path: '/Login',
@@ -73,97 +41,79 @@ const router = createRouter({
       component: () => import('../views/work/LoginView.vue'),
     },
     {
-      path: '/Composition',
-      name: 'Composition',
-      component: () => import('../views/Day2/CompositionView.vue'),
+      path: '/library',
+      name: 'MagpieLibrary',
+      component: () => import('../views/work/MagpieLibraryView.vue'),
+      meta: { category: 'library', tab: 'wishlist' },
     },
     {
-      path: '/Computed',
-      name: 'Computed',
-      component: () => import('../views/Day2/ComputedView.vue'),
+      path: '/library/classics',
+      name: 'ClassicLiterature',
+      component: () => import('../views/work/ClassicLiteratureView.vue'),
+      meta: { category: 'library', tab: 'classics' },
     },
     {
       path: '/WeatherComposition',
       name: 'WeatherComposition',
       component: () => import('../views/work/WeatherComposition.vue'),
-    },
-    {
-      path: '/ComponentParents',
-      name: 'ComponentParents',
-      component: () => import('../views/Day2/ComponentParents.vue'),
-    },
-    {
-      path: '/PropsEmitsParent',
-      name: 'PropsEmitsParent',
-      component: () => import('../views/Day2/PropsEmitsParent.vue'),
-    },
-    {
-      path: '/SlotDefaultParent',
-      name: 'SlotDefaultParent',
-      component: () => import('../views/Day2/SlotDefaultParent.vue'),
-    },
-    {
-      path: '/SlotNamedParent',
-      name: 'SlotNamedParent',
-      component: () => import('../views/Day2/SlotNamedParent.vue'),
-    },
-    {
-      path: '/SlotScopedParent',
-      name: 'SlotScopedParent',
-      component: () => import('../views/Day2/SlotScopedParent.vue'),
+      meta: { category: 'weather', tab: 'composition' },
     },
     {
       path: '/WeatherParent',
       name: 'WeatherParent',
       component: () => import('../views/work/WeatherParent.vue'),
+      meta: { category: 'weather', tab: 'parent' },
     },
-    {
-      path: '/UseRouter',
-      name: 'UseRouter',
-      component: () => import('../views/Day3/UseRouter.vue'),
-    },
-    {
-      path: '/OpenWeatherTest',
-      name: 'OpenWeatherTest',
-      component: () => import('../views/Day3/OpenWeatherTest.vue'),
-    },
-    // ── [Router 실습] 지연 로딩 + 동적 경로 매칭 + Catch-all Route ──
+    // ── 지연 로딩 + 동적 경로 매칭 + Catch-all Route ──
     {
       path: '/weather-router',
       name: 'WeatherHome',
       component: () => import('../views/WeatherHomeView.vue'),
+      meta: { category: 'weather', tab: 'router-demo' },
     },
     {
       path: '/weather-router/about',
       name: 'WeatherAbout',
       component: () => import('../views/WeatherAboutView.vue'),
+      meta: { category: 'weather', tab: 'router-demo' },
     },
     {
       path: '/weather/:cityId',
       name: 'WeatherDetail',
       component: () => import('../views/WeatherDetailView.vue'),
+      meta: { category: 'weather', tab: 'router-demo' },
     },
 
-    // ── [Store 실습 / 과제5] 과제4를 기반으로 Pinia configStore(단위 설정)를 적용 ──
+    // ── [과제5] 과제4를 기반으로 Pinia configStore(단위 설정)를 적용 ──
     {
       path: '/weather-store',
       name: 'WeatherStoreHome',
       component: () => import('../views/WeatherStoreHomeView.vue'),
+      meta: { category: 'weather', tab: 'store' },
     },
     {
       path: '/weather-store/about',
       name: 'WeatherStoreAbout',
       component: () => import('../views/WeatherStoreAboutView.vue'),
+      meta: { category: 'weather', tab: 'store' },
     },
     {
       path: '/weather-store/:cityId',
       name: 'WeatherStoreDetail',
       component: () => import('../views/WeatherStoreDetailView.vue'),
+      meta: { category: 'weather', tab: 'store' },
     },
     {
       path: '/MagpieHeung',
       name: 'MagpieHeung',
       component: () => import('../views/work/MagpieHeungView.vue'),
+      meta: { category: 'magpie' },
+    },
+    {
+      path: '/RankSystem',
+      name: 'RankSystem',
+      component: () => import('../views/work/RankSystem.vue'),
+      meta: { category: 'movie' },
     },
 
     // Catch-all Route: 위 규칙에 매칭되지 않는 모든 경로 (반드시 배열의 마지막에 위치)
@@ -185,7 +135,7 @@ router.beforeEach((to) => {
     }
   }
 
-  if (to.name === 'login' && authStore.isLoggedIn) {
+  if ((to.name === 'login' || to.name === 'signup') && authStore.isLoggedIn) {
     return { name: 'dashboard' }
   }
 })

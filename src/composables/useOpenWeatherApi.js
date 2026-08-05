@@ -65,8 +65,8 @@ export async function fetchAirQuality(lat, lon) {
   const components = entry?.components ?? {}
   return {
     aqi: entry?.main?.aqi ?? null, // OpenWeatherMap 자체 등급: 1(좋음) ~ 5(매우나쁨)
-    pm10: components.pm10 != null ? Math.round(components.pm10) : null,
-    pm2_5: components.pm2_5 != null ? Math.round(components.pm2_5) : null,
+    pm10: components.pm10 !== null && components.pm10 !== undefined ? Math.round(components.pm10) : null,
+    pm2_5: components.pm2_5 !== null && components.pm2_5 !== undefined ? Math.round(components.pm2_5) : null,
   }
 }
 

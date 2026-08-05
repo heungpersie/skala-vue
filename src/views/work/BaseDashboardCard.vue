@@ -9,27 +9,24 @@ defineProps({
 </script>
 
 <template>
-  <div class="section">
-    <p v-if="title" class="section-title">{{ title }}</p>
+  <el-card class="section" shadow="never">
+    <template v-if="title" #header>
+      <span class="section-title">{{ title }}</span>
+    </template>
 
     <!-- 부모가 내용을 주입하는 자리 -->
     <slot></slot>
-  </div>
+  </el-card>
 </template>
 
 <style scoped>
 /* [과제3-5] 이 컴포넌트가 책임지는 디자인만 scoped로 보관 */
 .section {
-  background: var(--color-background-mute);
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  padding: 18px 20px;
   margin-bottom: 16px;
 }
 .section-title {
   font-weight: 700;
   font-size: 15px;
   color: var(--color-heading);
-  margin: 0 0 10px 0;
 }
 </style>

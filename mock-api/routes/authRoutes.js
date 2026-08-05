@@ -117,6 +117,43 @@ function authenticateRequest(request) {
 }
 
 export async function handleAuthRoutes(request, response, url) {
+  if (request.method === 'POST' && url.pathname === '/api/auth/register') {
+    const body = await readJsonBody(request)
+    const name = body.name?.trim()
+    const email = body.email?.trim().toLowerCase()
+    const password = body.password
+
+    if (!name || !email || !password) {
+      throw createHttpError(400, '이름, 이메일, 비밀번호를 모두 입력해주세요.')
+    }
+
+    if (password.length < 4) {
+      throw createHttpError(400, '비밀번호는 4자 이상이어야 합니다.')
+    }
+
+    if (mockUsers.some((item) => item.email === email)) {
+      throw createHttpError(409, '이미 가입된 이메일입니다.')
+    }
+
+    const newUser = {
+      id: Math.max(...mockUsers.map((item) => item.id)) + 1,
+      email,
+      password,
+      name,
+      role: 'STUDENT',
+      department: '자기주도 실습',
+    }
+
+    // 서버 프로세스 메모리에만 저장되는 목업이므로, 개발 서버를 재시작하면 초기화됩니다.
+    mockUsers.push(newUser)
+
+    sendJson(response, 201, {
+      message: '회원가입이 완료되었습니다. 로그인해주세요.',
+      user: toPublicUser(newUser),
+    })
+    return true
+  }
+
   if (request.method === 'POST' && url.pathname === '/api/auth/login') {
     const body = await readJsonBody(request)
     const email = body.email?.trim().toLowerCase()

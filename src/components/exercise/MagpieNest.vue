@@ -125,52 +125,215 @@ const dustInfo = computed(() => (props.dustGrade ? DUST_INFO[props.dustGrade] : 
       <!-- 까치 -->
       <g class="magpie-body-group">
         <g class="cough-wrap">
-          <path
-            class="tail"
-            d="M100 96 L134 118 L120 122 L128 136 L112 128 L104 112 Z"
-            fill="url(#magpieTailGrad)"
-          />
-          <ellipse cx="80" cy="112" rx="32" ry="26" fill="var(--magpie-black)" />
-          <ellipse cx="72" cy="120" rx="16" ry="13" fill="var(--magpie-white)" />
-          <circle cx="54" cy="90" r="19" fill="var(--magpie-black)" />
-          <polygon class="beak" points="38,90 28,88 38,96" fill="#f4b942" />
-          <circle cx="52" cy="86" r="3" fill="var(--magpie-white)" />
-          <g class="wing">
-            <path d="M84 100 Q100 106 92 124 Q80 118 76 106 Z" fill="var(--magpie-black)" />
+          <!-- 꼬리: 4겹 깃털 + 깃대(rachis) -->
+          <g class="tail">
+            <path
+              d="M96 98 L146 110 L130 122 L148 140 L118 130 L100 116 Z"
+              fill="url(#tailGradBack)"
+              opacity="0.85"
+            />
+            <path d="M100 106 L138 118" stroke="rgba(255,255,255,0.15)" stroke-width="0.8" />
+            <path
+              d="M97 102 L132 113 L121 122 L132 136 L109 127 L99 114 Z"
+              fill="url(#tailGradMid)"
+            />
+            <path d="M100 109 L125 118" stroke="rgba(255,255,255,0.18)" stroke-width="0.8" />
+            <path
+              d="M98 106 L120 114 L113 121 L118 130 L103 123 L97 112 Z"
+              fill="url(#tailGradFront)"
+            />
+            <path d="M100 112 L113 118" stroke="rgba(255,255,255,0.2)" stroke-width="0.8" />
+            <path
+              d="M99 110 L110 115 L106 120 L108 126 L98 122 L96 116 Z"
+              fill="url(#tailGradInner)"
+              opacity="0.9"
+            />
           </g>
+
+          <!-- 다리 -->
+          <g class="legs">
+            <path d="M56 140 L54 150" stroke="#3a3d45" stroke-width="3" stroke-linecap="round" />
+            <path d="M76 138 L78 150" stroke="#3a3d45" stroke-width="3" stroke-linecap="round" />
+            <path
+              d="M49 150 L54 150 L59 149"
+              stroke="#3a3d45"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <path d="M50 153 L54 152" stroke="#3a3d45" stroke-width="1.4" stroke-linecap="round" />
+            <path
+              d="M71 150 L78 150 L85 149"
+              stroke="#3a3d45"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <path d="M72 153 L78 152" stroke="#3a3d45" stroke-width="1.4" stroke-linecap="round" />
+          </g>
+
+          <!-- 몸통 -->
+          <path
+            class="body"
+            d="M36 96 C24 92 14 100 14 114 C14 130 26 146 48 151 C68 155 90 151 99 137 C107 124 105 106 90 98 C76 90 52 90 36 96 Z"
+            fill="url(#bodySheen)"
+            stroke="rgba(0,0,0,0.18)"
+            stroke-width="0.6"
+          />
+          <path
+            d="M40 98 Q60 94 82 102"
+            stroke="rgba(255,255,255,0.18)"
+            stroke-width="1.4"
+            stroke-linecap="round"
+            fill="none"
+          />
+
+          <!-- 배(흰 무늬) -->
+          <path
+            class="belly"
+            d="M28 116 C22 128 28 144 46 149 C60 153 74 146 74 132 C74 120 62 112 48 113 C40 114 32 112 28 116 Z"
+            fill="var(--magpie-white)"
+          />
+          <path
+            d="M34 138 Q48 147 64 140"
+            stroke="rgba(0,0,0,0.06)"
+            stroke-width="6"
+            stroke-linecap="round"
+            fill="none"
+          />
+
+          <!-- 날개: 덮깃 결 + 소우깃(alula) + 청람색 스페큘럼 -->
+          <g class="wing">
+            <path
+              d="M58 96 Q90 97 88 123 Q84 140 60 136 Q47 128 49 108 Q51 100 58 96 Z"
+              fill="url(#bodySheen)"
+              stroke="rgba(0,0,0,0.18)"
+              stroke-width="0.6"
+            />
+            <path
+              d="M64 106 Q79 108 77 123 Q73 132 62 128 Q55 119 58 110 Q60 106 64 106 Z"
+              fill="var(--magpie-white)"
+              opacity="0.92"
+            />
+            <path
+              d="M62 128 Q72 132 82 124 Q78 136 64 136 Q60 133 62 128 Z"
+              fill="url(#tailGradMid)"
+              opacity="0.85"
+            />
+            <path
+              d="M56 100 Q50 104 52 110 Q56 108 58 103 Z"
+              fill="var(--magpie-black)"
+              opacity="0.9"
+              stroke="rgba(0,0,0,0.2)"
+              stroke-width="0.4"
+            />
+            <path
+              d="M60 100 Q82 104 84 122"
+              stroke="rgba(255,255,255,0.28)"
+              stroke-width="1.2"
+              fill="none"
+              class="wing-line"
+            />
+            <path
+              d="M56 112 Q70 116 74 128"
+              stroke="rgba(255,255,255,0.16)"
+              stroke-width="1"
+              fill="none"
+            />
+            <path
+              d="M53 122 Q64 126 68 134"
+              stroke="rgba(255,255,255,0.12)"
+              stroke-width="0.9"
+              fill="none"
+            />
+          </g>
+
+          <!-- 머리 -->
+          <path
+            d="M22.5 79 C21 65 30.5 56 43 56.5 C55 57 61.5 67 59.5 79 C58 90 49 97 39.5 97 C29.5 97 24 89 22.5 79 Z"
+            fill="url(#headSheen)"
+            stroke="rgba(0,0,0,0.18)"
+            stroke-width="0.6"
+          />
+
+          <!-- 부리 -->
+          <path
+            class="beak"
+            d="M25 74.5 Q13 71 5 76 Q2.5 78 5.5 80.5 Q14 85 25 81.5 Q28 78 25 74.5 Z"
+            fill="url(#beakGrad)"
+          />
+          <path
+            d="M23 76 Q15 77 9 78"
+            stroke="#a9711a"
+            stroke-width="0.8"
+            opacity="0.55"
+            fill="none"
+          />
+          <circle cx="20" cy="76.4" r="0.7" fill="#8a5c14" opacity="0.6" />
+
+          <!-- 눈 -->
+          <path d="M31 71 Q36 68 41 71" stroke="rgba(0,0,0,0.15)" stroke-width="1.2" fill="none" />
+          <circle cx="36" cy="76" r="3.6" fill="var(--magpie-white)" />
+          <circle cx="36" cy="76" r="3.8" fill="none" stroke="rgba(0,0,0,0.25)" stroke-width="0.6" />
+          <circle cx="35.3" cy="76.6" r="1.7" fill="#1b1c1f" />
+          <circle cx="37.3" cy="74.6" r="0.7" fill="#ffffff" opacity="0.9" />
+
           <g class="sweat" v-if="weatherState === 'hot'">
-            <path d="M100 78 q4 6 0 10 a5 5 0 1 1 0 -10 Z" fill="#5aa9e6" />
+            <path d="M50 58 q4 6 0 10 a5 5 0 1 1 0 -10 Z" fill="#5aa9e6" />
           </g>
           <g v-if="dustBad" class="mask">
             <path
-              d="M25 81 Q47 74 51 90 Q47 106 25 99 Q18 90 25 81 Z"
+              d="M6 74 Q34 64 42 82 Q34 100 6 92 Q0 82 6 74 Z"
               fill="#eef3f6"
               stroke="#aebac2"
               stroke-width="1.5"
             />
             <path
-              d="M27 85 Q38 83 47 87 M27 94 Q38 97 47 93"
+              d="M9 79 Q22 76 34 80 M9 88 Q22 91 34 87"
               stroke="#aebac2"
               stroke-width="1"
               fill="none"
             />
-            <line x1="47" y1="83" x2="60" y2="78" stroke="#c7d0d6" stroke-width="1.5" />
-            <line x1="47" y1="97" x2="60" y2="102" stroke="#c7d0d6" stroke-width="1.5" />
+            <line x1="34" y1="76" x2="48" y2="70" stroke="#c7d0d6" stroke-width="1.5" />
+            <line x1="34" y1="90" x2="48" y2="96" stroke="#c7d0d6" stroke-width="1.5" />
           </g>
         </g>
       </g>
 
       <g v-if="weatherState === 'cloudy'" class="zzz">
-        <text x="96" y="70" class="z z1">Z</text>
-        <text x="106" y="58" class="z z2">Z</text>
-        <text x="116" y="46" class="z z3">Z</text>
+        <text x="46" y="52" class="z z1">Z</text>
+        <text x="56" y="40" class="z z2">Z</text>
+        <text x="66" y="28" class="z z3">Z</text>
       </g>
 
       <defs>
-        <linearGradient id="magpieTailGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <radialGradient id="bodySheen" cx="35%" cy="30%" r="75%">
+          <stop offset="0%" stop-color="#464a54" />
+          <stop offset="55%" stop-color="var(--magpie-black)" />
+          <stop offset="100%" stop-color="var(--magpie-black)" />
+        </radialGradient>
+        <radialGradient id="headSheen" cx="40%" cy="25%" r="70%">
+          <stop offset="0%" stop-color="#4a4d57" />
+          <stop offset="55%" stop-color="var(--magpie-black)" />
+          <stop offset="100%" stop-color="#0f1013" />
+        </radialGradient>
+        <linearGradient id="tailGradBack" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="var(--magpie-violet)" />
+          <stop offset="100%" stop-color="var(--magpie-blue)" />
+        </linearGradient>
+        <linearGradient id="tailGradMid" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="var(--magpie-blue)" />
+          <stop offset="100%" stop-color="var(--magpie-teal)" />
+        </linearGradient>
+        <linearGradient id="tailGradFront" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="var(--magpie-teal)" />
-          <stop offset="55%" stop-color="var(--magpie-blue)" />
+          <stop offset="100%" stop-color="var(--magpie-blue)" />
+        </linearGradient>
+        <linearGradient id="tailGradInner" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="var(--magpie-teal)" />
           <stop offset="100%" stop-color="var(--magpie-violet)" />
+        </linearGradient>
+        <linearGradient id="beakGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffcf6b" />
+          <stop offset="100%" stop-color="#d98f1f" />
         </linearGradient>
       </defs>
     </svg>
@@ -291,7 +454,7 @@ const dustInfo = computed(() => (props.dustGrade ? DUST_INFO[props.dustGrade] : 
 
 /* 기본 상태: 아주 살짝 숨쉬는 정도로만 움직인다 */
 .magpie-body-group {
-  transform-origin: 80px 130px;
+  transform-origin: 58px 122px;
   animation: breathe 2.6s ease-in-out infinite;
 }
 @keyframes breathe {
@@ -375,7 +538,7 @@ const dustInfo = computed(() => (props.dustGrade ? DUST_INFO[props.dustGrade] : 
 
 /* 더움: 날개를 파닥이며 헥헥 */
 [data-state='hot'] .wing {
-  transform-origin: 84px 106px;
+  transform-origin: 68px 104px;
   animation: flap 0.35s ease-in-out infinite alternate;
 }
 @keyframes flap {

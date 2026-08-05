@@ -121,69 +121,70 @@ const showDetail = (cityName, status) => {
     <p class="panel-title">
       🌤️ 과제 1: 날씨 (Mockup) <span class="live-dot" title="Open-Meteo 실시간 연동"></span>
     </p>
-    <p v-if="apiError" class="api-error">
-      ⚠️ 날씨 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
-    </p>
+    <el-alert
+      v-if="apiError"
+      class="api-error"
+      title="⚠️ 날씨 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
+      type="error"
+      show-icon
+      :closable="false"
+    />
 
     <!-- 검색 -->
-    <div class="section">
+    <el-card class="section" shadow="never">
       <p class="section-title">🔍 도시 검색</p>
-      <input
-        type="text"
+      <el-input
         placeholder="검색할 도시 이름 입력"
-        :value="searchQuery"
-        @input="searchQuery = $event.target.value"
+        :model-value="searchQuery"
+        clearable
+        @input="(val) => (searchQuery = val)"
+        @clear="searchQuery = ''"
       />
       <p class="search-status">
         검색 중인 도시: <b>{{ searchQuery || '(없음)' }}</b>
       </p>
-    </div>
+    </el-card>
 
     <!-- 필터 + 정렬 컨트롤 -->
-    <div class="section controls">
+    <el-card class="section controls" shadow="never">
       <div class="control-row">
         <span class="control-label">상태 필터</span>
-        <div class="chip-group">
-          <button
-            v-for="status in statusOptions"
-            :key="status"
-            class="chip"
-            :class="{ active: activeStatus === status }"
-            @click="activeStatus = status"
-          >
+        <el-radio-group v-model="activeStatus" size="small">
+          <el-radio-button v-for="status in statusOptions" :key="status" :value="status">
             {{ status }}
-          </button>
-        </div>
+          </el-radio-button>
+        </el-radio-group>
       </div>
 
       <div class="control-row">
         <span class="control-label">정렬</span>
-        <select v-model="sortOrder" class="sort-select">
-          <option value="default">기본순</option>
-          <option value="temp-desc">기온 높은순</option>
-          <option value="temp-asc">기온 낮은순</option>
-          <option value="name">이름순</option>
-        </select>
+        <el-select v-model="sortOrder" style="width: 140px">
+          <el-option label="기본순" value="default" />
+          <el-option label="기온 높은순" value="temp-desc" />
+          <el-option label="기온 낮은순" value="temp-asc" />
+          <el-option label="이름순" value="name" />
+        </el-select>
       </div>
 
       <div class="control-row" v-if="averageTemp !== null">
         <span class="control-label">평균 기온</span>
-        <span class="avg-temp">{{ averageTemp }}°C</span>
+        <el-tag type="primary" effect="plain">{{ averageTemp }}°C</el-tag>
       </div>
-    </div>
+    </el-card>
 
     <!-- 지역별 날씨 현황 -->
-    <div class="section">
+    <el-card class="section" shadow="never">
       <p class="section-title">📍 지역별 날씨 현황</p>
 
-      <div v-if="loading" class="loading">날씨 불러오는 중...</div>
+      <el-skeleton v-if="loading" :rows="4" animated />
 
       <TransitionGroup v-else name="card-list" tag="div">
-        <div
+        <el-card
           v-for="city in sortedList"
           :key="city.id"
           class="weather-card"
           :class="{ selected: selectedCity === city.name }"
+          shadow="hover"
           @click="selectCity(city.name)"
         >
           <div class="weather-info">
@@ -200,36 +201,40 @@ const showDetail = (cityName, status) => {
               현재 기온: {{ city.temp === null ? '조회 실패' : `${city.temp}°C` }}
             </div>
 
-            <span v-if="city.temp === null" class="badge unknown">❓ 정보 없음</span>
-            <span v-else-if="city.temp >= 25" class="badge hot">🔥 더움 (25도 이상)</span>
-            <span v-else-if="city.temp >= 10" class="badge cool">☁️ 선선함 (10~24도)</span>
-            <span v-else class="badge cold">🧊 추움 (10도 미만)</span>
+            <el-tag v-if="city.temp === null" type="info" effect="dark" round>❓ 정보 없음</el-tag>
+            <el-tag v-else-if="city.temp >= 25" class="tag-hot" effect="dark" round>🔥 더움 (25도 이상)</el-tag>
+            <el-tag v-else-if="city.temp >= 10" type="primary" effect="dark" round>☁️ 선선함 (10~24도)</el-tag>
+            <el-tag v-else class="tag-cold" effect="dark" round>🧊 추움 (10도 미만)</el-tag>
           </div>
 
           <!-- 버블링 없이(.stop) 상세보기 -->
-          <button class="detail-btn" @click.stop="showDetail(city.name, city.status)">
+          <el-button class="detail-btn" size="small" @click.stop="showDetail(city.name, city.status)">
             상세 정보 및 미세먼지
-          </button>
-        </div>
+          </el-button>
+        </el-card>
       </TransitionGroup>
 
       <p v-if="!loading && sortedList.length === 0" class="empty">검색 결과가 없습니다.</p>
-    </div>
+    </el-card>
 
     <!-- 지도 -->
-    <div class="section" v-if="!loading">
+    <el-card class="section" shadow="never" v-if="!loading">
       <p class="section-title">🗺️ 지도로 보기</p>
       <WeatherMap
         :cities="sortedList"
         :selected-id="selectedCityId"
         @select-city="selectCityById"
       />
-    </div>
+    </el-card>
 
     <!-- 상태바 -->
-    <div class="status-bar">
-      {{ selectedCity ? `${selectedCity}이 선택되었습니다.` : '카드를 클릭하거나 검색해 보세요.' }}
-    </div>
+    <el-alert
+      class="status-bar"
+      :title="selectedCity ? `${selectedCity}이 선택되었습니다.` : '카드를 클릭하거나 검색해 보세요.'"
+      type="info"
+      :closable="false"
+      center
+    />
   </div>
 </template>
 
@@ -288,21 +293,9 @@ const showDetail = (cityName, status) => {
   }
 }
 .api-error {
-  background: #fdecea;
-  color: #c0392b;
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 13px;
   margin: 0 0 16px 0;
 }
-.badge.unknown {
-  background: #9aa5b1;
-}
 .section {
-  background: var(--color-background-mute);
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  padding: 18px 20px;
   margin-bottom: 16px;
 }
 .section-title {
@@ -310,19 +303,6 @@ const showDetail = (cityName, status) => {
   font-size: 15px;
   color: var(--color-heading);
   margin: 0 0 10px 0;
-}
-input[type='text'] {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
-  background: var(--color-background);
-  color: var(--color-text);
-}
-input[type='text']:focus {
-  border-color: var(--magpie-accent);
 }
 .search-status {
   margin-top: 8px;
@@ -353,70 +333,26 @@ input[type='text']:focus {
   color: var(--color-text);
   min-width: 60px;
 }
-.chip-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.chip {
-  border: 1px solid var(--color-border);
-  background: var(--color-background);
-  border-radius: 20px;
-  padding: 5px 12px;
-  font-size: 12px;
-  color: var(--color-text);
-  cursor: pointer;
-}
-.chip.active {
-  background: var(--magpie-gradient);
-  border-color: transparent;
-  color: #fff;
-}
-.sort-select {
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 13px;
-  background: var(--color-background);
-  color: var(--color-text);
-}
-.avg-temp {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--magpie-accent);
-}
-
-/* 로딩 */
-.loading {
-  text-align: center;
-  padding: 24px 0;
-  color: var(--color-text);
-  opacity: 0.7;
-  font-size: 14px;
-}
 
 /* 카드 */
 .weather-card {
-  background: var(--color-background);
-  border-radius: 12px;
-  padding: 14px 16px;
   margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition:
     box-shadow 0.15s ease,
     transform 0.15s ease;
-  border: 1px solid var(--color-border);
 }
 .weather-card:hover {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
 }
 .weather-card.selected {
   border-color: var(--magpie-accent);
+}
+.weather-card :deep(.el-card__body) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 .weather-info .city-line {
   font-weight: 700;
@@ -435,38 +371,19 @@ input[type='text']:focus {
   color: var(--color-text);
   margin-bottom: 8px;
 }
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 20px;
+.tag-hot {
+  background: #ef5b5b;
+  border-color: #ef5b5b;
   color: #fff;
 }
-.badge.hot {
-  background: #ef5b5b;
-}
-.badge.cool {
-  background: var(--magpie-blue);
-}
-.badge.cold {
+.tag-cold {
   background: var(--magpie-violet);
+  border-color: var(--magpie-violet);
+  color: #fff;
 }
 .detail-btn {
-  background: var(--color-background);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 8px 14px;
-  font-size: 13px;
-  color: var(--color-text);
-  cursor: pointer;
   white-space: nowrap;
-}
-.detail-btn:hover {
-  background: var(--magpie-accent-soft);
-  border-color: var(--magpie-accent);
+  flex-shrink: 0;
 }
 
 /* 리스트 애니메이션 */
@@ -485,15 +402,6 @@ input[type='text']:focus {
   width: calc(100% - 40px);
 }
 
-.status-bar {
-  text-align: center;
-  background: var(--magpie-accent-soft);
-  color: var(--magpie-accent);
-  font-size: 14px;
-  font-weight: 600;
-  padding: 12px;
-  border-radius: 10px;
-}
 .empty {
   text-align: center;
   color: var(--color-text);

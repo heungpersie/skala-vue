@@ -304,10 +304,10 @@ const handleAddCity = async (result) => {
   width: 100%;
   margin: 0 0 28px;
   text-align: center;
-  font-size: clamp(2.6rem, 6vw, 6rem);
-  font-weight: 900;
-  letter-spacing: 0.05em;
-  color: #000;
+  font-size: clamp(1.7rem, 3vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--color-heading);
   box-sizing: border-box;
 }
 
