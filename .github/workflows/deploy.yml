@@ -41,6 +41,7 @@ jobs:
         env:
           VITE_OPENWEATHER_API_KEY: ${{ secrets.VITE_OPENWEATHER_API_KEY }}
           VITE_KOBIS_API_KEY: ${{ secrets.VITE_KOBIS_API_KEY }}
+          VITE_KAKAO_API_KEY: ${{ secrets.VITE_KAKAO_API_KEY }}
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v6
